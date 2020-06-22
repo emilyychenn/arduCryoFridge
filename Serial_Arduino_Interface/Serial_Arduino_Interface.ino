@@ -1,18 +1,27 @@
+const int led1Pin = 12;
+const int led2Pin = 11;
+const int led3Pin = 10;
+const int buttonPin = 2;
+
 int ontime = 1000;
 int offtime = 1000;
 int timetostart;
 char menuInput;
-const int ledPin = 12;
 int ledState = LOW;
 
-//store last time LED was updated
-unsigned long previousMillis = 0;
+int buttonState = 0;
+int lastButtonState = 0;
+
+unsigned long previousMillis = 0; // last time LED was updated
 long onTime = 1000;  // default; will be changed through commands
 long offTime = 1000; // default; will be changed through commands
 
 
 void setup() {
-  pinMode(ledPin, OUTPUT);
+  pinMode(buttonPin, INPUT);
+  pinMode(led1Pin, OUTPUT);
+  pinMode(led2Pin, OUTPUT);
+  pinMode(led3Pin, OUTPUT);
   Serial.begin(9600);
   Serial.println("UNO is ready!");
 }
@@ -24,6 +33,17 @@ void loop() {
   }
 
   setLed(ontime, offtime);
+
+  buttonState = digitalRead(buttonPin);
+  if (buttonState != lastButtonState) {
+    if(buttonState == HIGH) {
+      Serial.println("Button State: ON");
+    } else {
+      Serial.println("Button State: OFF");
+    }
+    delay(500);
+  }
+  lastButtonState = buttonState;
 }
 
 
