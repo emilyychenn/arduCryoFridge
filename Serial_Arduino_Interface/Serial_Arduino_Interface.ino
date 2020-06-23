@@ -1,16 +1,21 @@
-const int led1Pin = 12;
-const int led2Pin = 11;
-const int led3Pin = 10;
+const int ledPin = 13;
 const int buttonPin = 2;
+const int button2Pin = 4;
+const int button3Pin = 7;
 
 int ontime = 1000;
 int offtime = 1000;
-int timetostart;
+//int timetostart; // was int when used for delay(); should be changed when interrupt is added
+unsigned long timetostart;
 char menuInput;
 int ledState = LOW;
 
 int buttonState = 0;
+int button2State = 0;
+int button3State = 0;
 int lastButtonState = 0;
+int lastButton2State = 0;
+int lastButton3State = 0;
 
 unsigned long previousMillis = 0; // last time LED was updated
 long onTime = 1000;  // default; will be changed through commands
@@ -19,9 +24,9 @@ long offTime = 1000; // default; will be changed through commands
 
 void setup() {
   pinMode(buttonPin, INPUT);
-  pinMode(led1Pin, OUTPUT);
-  pinMode(led2Pin, OUTPUT);
-  pinMode(led3Pin, OUTPUT);
+  pinMode(button2Pin, INPUT);
+  pinMode(button3Pin, INPUT);
+  pinMode(ledPin, OUTPUT);
   Serial.begin(9600);
   Serial.println("UNO is ready!");
 }
@@ -41,9 +46,31 @@ void loop() {
     } else {
       Serial.println("Button State: OFF");
     }
-    delay(500);
+    delay(50);
   }
   lastButtonState = buttonState;
+
+  button2State = digitalRead(button2Pin);
+  if (button2State != lastButton2State) {
+    if(button2State == HIGH) {
+      Serial.println("Button 2 State: ON");
+    } else {
+      Serial.println("Button 2 State: OFF");
+    }
+    delay(50);
+  }
+  lastButton2State = button2State;
+
+  button3State = digitalRead(button3Pin);
+  if (button3State != lastButton3State) {
+    if(button3State == HIGH) {
+      Serial.println("Button 3 State: ON");
+    } else {
+      Serial.println("Button 3 State: OFF");
+    }
+    delay(50);
+  }
+  lastButton3State = button3State;
 }
 
 
@@ -93,9 +120,17 @@ void menuOptions() {
     case 'Z':
       // start on/off cycle in xxx minutes
       timetostart = Serial.parseInt();
+      unsigned long previousTime = millis();
       Serial.print("UNO will start on/off cycle in: ");
       Serial.println(timetostart);
-      delay(timetostart);
+//      delay(timetostart);
+
+      // TODO:
+      // because of this section, we need an interrupt (i.e. when delay time is set to 10 secs, button pushes aren't shown until after delay is over)
+      unsigned long currentTime = millis();
+      while (currentTime - previousTime < timetostart) {
+        previousTime = currentTime;
+      }
       break;
     case 'S':
       // report status of all switches
