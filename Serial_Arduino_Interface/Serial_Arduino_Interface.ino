@@ -5,7 +5,6 @@ const int button3Pin = 7;
 
 int ontime = 1000;
 int offtime = 1000;
-//int timetostart; // was int when used for delay(); should be changed when interrupt is added
 unsigned long timetostart;
 char menuInput;
 int ledState = LOW;
@@ -123,15 +122,11 @@ void menuOptions() {
       unsigned long previousTime = millis();
       Serial.print("UNO will start on/off cycle in: ");
       Serial.println(timetostart);
-//      delay(timetostart);
-
-      // TODO:
-      // because of this section, we need an interrupt (i.e. when delay time is set to 10 secs, button pushes aren't shown until after delay is over)
       unsigned long currentTime = millis();
-      while (currentTime - previousTime < timetostart) {
+      if (currentTime - previousTime < timetostart) {
         previousTime = currentTime;
-      }
-      break;
+        currentTime = millis();
+      } break;
     case 'S':
       // report status of all switches
       Serial.println("Report status of all switches");
