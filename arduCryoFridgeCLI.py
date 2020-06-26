@@ -19,7 +19,6 @@ Options:
 from docopt import docopt
 import serial
 
-
 arduino = serial.Serial('/dev/cu.usbmodem14101', 9600)
 programVersion = 1.0
 
@@ -34,33 +33,47 @@ if args['configure'] == True:
         # do the thing with the value
         ontime = args['--ontime']
         print("Ontime = " + ontime)
+        arduino.write(('A'+ str(ontime)).encode())
     elif args['--offtime'] != None:
         # do the thing with the value
         offtime = args['--offtime']
         print("Offtime = " + offtime)
+        arduino.write(('B'+ str(ontime)).encode())
         
 elif args['switch'] == True:
-    if args['--on'] != None:
-        if args['--now'] != False:
+    if args['--on'] == True:
+        if args['--now'] == True:
             # switch compressor on NOW (equivalent to 'G' case in serial arduino interface)
             print("switch compressor on NOW")
+            arduino.write('G'.encode())
         else:
             # delay turning on by 'delay' minutes
-            print("delay turning on by 'delay' minutes")
-    elif args['--off'] != None:
-        if args['--now'] != False:
+            delay = args['--delay']
+            print("delay turning on by " + str(delay) + " minutes")
+            arduino.write(('Z'+str(delay)).encode())
+    elif args['--off'] == True:
+        if args['--now'] == True:
             # switch compressor off NOW (equivalent to 'X' case in serial arduino interface)
             print("switch compressor off NOW")
+            arduino.write('X'.encode())
         else:
             # delay turning off by 'delay' minutes
-            print("delay turning off by 'delay' minutes")
+            delay = args['--delay']
+            print("delay turning off by " + str(delay) + " minutes")
+            arduino.write(('Z'+str(delay)).encode())
             
 elif args['--status'] != False:
     # Read out and report PT410 status
+    # CHECK: is this the status of the switches?
     print("PT410 status: ")
+    arduino.write('S'.encode())
+    arduinoStatus = arduino.readline()
+    print(arduinoStatus)
     
 elif args['-q'] != False:
     print("Python program version: " + str(programVersion))
-    print("Arduino program version: ") # GET ARDUINO PROGRAM VERSION
+    arduino.write('Q'.encode())
+    arduinoProgramVersion = arduino.readline()
+    print("Arduino program version: " + arduinoProgramVersion)
             
         

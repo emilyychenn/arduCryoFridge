@@ -3,8 +3,8 @@ const int buttonPin = 2;
 const int button2Pin = 4;
 const int button3Pin = 7;
 
-int ontime = 1000;
-int offtime = 1000;
+int ontime = 5000;
+int offtime = 5000;
 unsigned long timetostart;
 char menuInput;
 int ledState = LOW;
@@ -19,6 +19,8 @@ int lastButton3State = 0;
 unsigned long previousMillis = 0; // last time LED was updated
 long onTime = 1000;  // default; will be changed through commands
 long offTime = 1000; // default; will be changed through commands
+
+String arduinoProgramVersion = "1.0";
 
 
 void setup() {
@@ -138,7 +140,7 @@ void menuOptions() {
       break;
     case 'Q':
       // print name of version of arduino code
-      Serial.println("Version of arduino code: ___");
+      Serial.println("Version of arduino code: " + arduinoProgramVersion);
       break;
     case '?':
       // print help screen
