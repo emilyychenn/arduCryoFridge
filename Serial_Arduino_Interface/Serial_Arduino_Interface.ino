@@ -121,17 +121,12 @@ void menuOptions() {
     case 'Z':
       // start on/off cycle in xxx minutes
       timetostart = Serial.parseInt();
-      unsigned long previousTime = millis();
       Serial.print("UNO will start on/off cycle in: ");
       Serial.println(timetostart);
-      unsigned long currentTime = millis();
-      if (currentTime - previousTime < timetostart) {
-        previousTime = currentTime;
-        currentTime = millis();
-      } break;
+      delay(timetostart);   // can use delay since delay function does not disable interrupts!
+      break;
     case 'S':
       // report status of all switches
-      Serial.println("Report status of all switches");
       if (ledState == HIGH) {
         Serial.println("Status of pin: ON");
       } else if (ledState == LOW) {

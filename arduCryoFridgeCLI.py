@@ -28,6 +28,7 @@ if __name__ == "__main__":
     print(args)
 
 
+# NOTE: when testing in python IDLE, make sure "restart shell" is NOT selected!
 if args['configure'] == True:
     if args['--ontime'] != None:
         # do the thing with the value
@@ -74,6 +75,6 @@ elif args['-q'] != False:
     print("Python program version: " + str(programVersion))
     arduino.write('Q'.encode())
     arduinoProgramVersion = arduino.readline()
-    print("Arduino program version: " + arduinoProgramVersion)
+    print("Arduino program version: " + str(arduinoProgramVersion))
             
         
