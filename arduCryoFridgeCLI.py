@@ -5,6 +5,7 @@ Usage:
   arduCryoFridgeCLI.py -s | --status
   arduCryoFridgeCLI.py -h | --help
   arduCryoFridgeCLI.py -q
+  arduCryoFridgeCLI.py [--port=<USBportname> | --autoport]
   
 Options:
   --ontime=<ontime>     duration of ontime minutes.
@@ -13,13 +14,17 @@ Options:
   -s --status           Read out and report PT410 status
   -h --help             Show this screen.
   -q                    Query program version + version run on the arduino
+  --port=<USBportname>  Specify USB port: must be done before running any other commands
+  --autoport            automatically detect USB port: alternative that must be done before running other commands
 
 """
 
 from docopt import docopt
 import serial
+import serial.tools.list_ports
+# from gi.repository import Gtk
 
-arduino = serial.Serial('/dev/cu.usbmodem14201', 9600)
+baud = 9600
 programVersion = 1.0
 
 
@@ -28,53 +33,75 @@ if __name__ == "__main__":
     print(args)
 
 
-# NOTE: when testing in python IDLE, make sure "restart shell" is NOT selected!
+# NOTE: MUST SPECIFY OR AUTODETECT PORT BEFORE RUNNING ANY OTHER COMMANNDS, OTHERWISE NOTHING WORKS
+if args['--port'] != None:
+    usbPort = args['--port']
+    try:
+        ser = serial.Serial(usbPort, baud)
+    except:
+        print("\nCouldn't find port: " + str(usbPort) + " Recheck your port or try '--autoport' to autodetect the port.")
+        ser = None
+elif args['--autoport'] != False:
+    # doesn't work with third-party Arduino knockoffs (in which case, user specifies port)
+    ports = serial.tools.list_ports.comports()
+    connected = False
+    for port, desc, hwid in sorted(ports):
+        print("{}: {} [{}]".format(port, desc, hwid))
+        if desc == "USB2.0-Serial":
+            try:
+                ser = serial.Serial(port, baud, timeout = 0.05)
+                # textbuff.insert_at_cursor("Connected to: " + port + '\n', -1)
+                print("Connected to: " + port + '\n')
+                connected = True
+                break
+            except Exception as e:
+                # textbuff.insert_at_cursor("\nCouldn't open port: " + str(e), -1)
+                print("\nCouldn't open port: " + str(e))
+                ser = None
+    if not(connected):
+        # textbuff.insert_at_cursor("No likely serial port found\n", -1)
+        print("No likely serial port found. Use command '--port=<USBportname>' to manually specify port")
+
+
 if args['configure'] == True:
     if args['--ontime'] != None:
-        # do the thing with the value
         ontime = args['--ontime']
         print("Ontime = " + ontime)
-        arduino.write(('A'+ str(ontime)).encode())
+        ser.write(('A'+ str(ontime)).encode())
     elif args['--offtime'] != None:
-        # do the thing with the value
         offtime = args['--offtime']
         print("Offtime = " + offtime)
-        arduino.write(('B'+ str(offtime)).encode())
+        ser.write(('B'+ str(offtime)).encode())
         
 elif args['switch'] == True:
     if args['--on'] == True:
         if args['--now'] == True:
-            # switch compressor on NOW (equivalent to 'G' case in serial arduino interface)
             print("switch compressor on NOW")
-            arduino.write('G'.encode())
+            ser.write('G'.encode())
         else:
-            # delay turning on by 'delay' minutes
             delay = args['--delay']
             print("delay turning on by " + str(delay) + " minutes")
-            arduino.write(('Z'+str(delay)).encode())
+            ser.write(('Z'+str(delay)).encode())
     elif args['--off'] == True:
         if args['--now'] == True:
-            # switch compressor off NOW (equivalent to 'X' case in serial arduino interface)
             print("switch compressor off NOW")
-            arduino.write('X'.encode())
+            ser.write('X'.encode())
         else:
-            # delay turning off by 'delay' minutes
             delay = args['--delay']
             print("delay turning off by " + str(delay) + " minutes")
-            arduino.write(('Z'+str(delay)).encode())
+            ser.write(('Z'+str(delay)).encode())
             
 elif args['--status'] != False:
-    # Read out and report PT410 status
-    # CHECK: is this the status of the switches?
     print("PT410 status: ")
-    arduino.write('S'.encode())
-    arduinoStatus = arduino.readline()
+    ser.write('S'.encode())
+    ser.readline()
+    arduinoStatus = ser.readline()
     print(arduinoStatus)
     
 elif args['-q'] != False:
     print("Python program version: " + str(programVersion))
-    arduino.write('Q'.encode())
-    arduinoProgramVersion = arduino.readline()
+    ser.write('Q'.encode())
+    arduinoProgramVersion = ser.readline()
     print("Arduino program version: " + str(arduinoProgramVersion))
             
         
