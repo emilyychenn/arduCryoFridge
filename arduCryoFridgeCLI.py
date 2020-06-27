@@ -7,8 +7,8 @@ Usage:
   arduCryoFridgeCLI.py -q
   
 Options:
-  --ontime=<ontime>     duration of ontime [default: 5] minutes.
-  --offtime=<offtime>   duration of offtime [default: 5] minutes.
+  --ontime=<ontime>     duration of ontime minutes.
+  --offtime=<offtime>   duration of offtime minutes.
   --delay=<delay>       start on/off cycle in delay [default: 0] minutes.
   -s --status           Read out and report PT410 status
   -h --help             Show this screen.
@@ -19,7 +19,7 @@ Options:
 from docopt import docopt
 import serial
 
-arduino = serial.Serial('/dev/cu.usbmodem14101', 9600)
+arduino = serial.Serial('/dev/cu.usbmodem14201', 9600)
 programVersion = 1.0
 
 
@@ -39,7 +39,7 @@ if args['configure'] == True:
         # do the thing with the value
         offtime = args['--offtime']
         print("Offtime = " + offtime)
-        arduino.write(('B'+ str(ontime)).encode())
+        arduino.write(('B'+ str(offtime)).encode())
         
 elif args['switch'] == True:
     if args['--on'] == True:
