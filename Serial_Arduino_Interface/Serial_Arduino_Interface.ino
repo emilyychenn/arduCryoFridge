@@ -2,19 +2,15 @@ const int ledPin = 13;
 const int button1Pin = 2;
 const int button2Pin = 3;
 const int button3Pin = 7;
+int button1State = 0;
+int button2State = 0;
+int button3State = 0;
 
 int ontime = 5000;
 int offtime = 5000;
 unsigned long timetostart;
 char menuInput;
 int ledState = LOW;
-
-//int button1State = 0;
-//int button2State = 0;
-//int button3State = 0;
-//int lastButton1State = 0;
-//int lastButton2State = 0;
-//int lastButton3State = 0;
 
 unsigned long previousMillis = 0; // last time LED was updated
 long onTime = 1000;  // default; will be changed through commands
@@ -29,12 +25,9 @@ void setup() {
   pinMode(button1Pin, INPUT_PULLUP);
   pinMode(button2Pin, INPUT_PULLUP);
   pinMode(button3Pin, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(button1Pin), interruptRising1, RISING);
-  attachInterrupt(digitalPinToInterrupt(button2Pin), interruptRising2, RISING);
-  attachInterrupt(digitalPinToInterrupt(button3Pin), interruptRising3, RISING);
-  attachInterrupt(digitalPinToInterrupt(button1Pin), interruptFalling1, FALLING);
-  attachInterrupt(digitalPinToInterrupt(button2Pin), interruptFalling2, FALLING);
-  attachInterrupt(digitalPinToInterrupt(button3Pin), interruptFalling3, FALLING);
+  attachInterrupt(digitalPinToInterrupt(button1Pin), interruptChange1, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(button2Pin), interruptChange2, CHANGE);
+  attachInterrupt(digitalPinToInterrupt(button3Pin), interruptChange3, CHANGE);
   
   Serial.begin(9600);
   Serial.println("UNO is ready!");
@@ -45,67 +38,40 @@ void loop() {
   if(Serial.available()) {
     menuOptions();
   }
-
   setLed(ontime, offtime);
-
-//  button1State = digitalRead(button1Pin);
-//  if (button1State != lastButton1State) {
-//    if(button1State == HIGH) {
-//      Serial.println("Button 1 State: ON");
-//    } else {
-//      Serial.println("Button 1 State: OFF");
-//    }
-//    delay(50);
-//  }
-//  lastButton1State = button1State;
-//
-//  button2State = digitalRead(button2Pin);
-//  if (button2State != lastButton2State) {
-//    if(button2State == HIGH) {
-//      Serial.println("Button 2 State: ON");
-//    } else {
-//      Serial.println("Button 2 State: OFF");
-//    }
-//    delay(50);
-//  }
-//  lastButton2State = button2State;
-//
-//  button3State = digitalRead(button3Pin);
-//  if (button3State != lastButton3State) {
-//    if(button3State == HIGH) {
-//      Serial.println("Button 3 State: ON");
-//    } else {
-//      Serial.println("Button 3 State: OFF");
-//    }
-//    delay(50);
-//  }
-//  lastButton3State = button3State;
-
 }
 
-void interruptRising1() {
-  Serial.println("Button 1 State: ON");
+
+void interruptChange1() {
+  if (button1State == HIGH) {
+    button1State = LOW; // button state changed from high to low
+    Serial.println("Button 1 State: OFF");
+  } else if (button1State == LOW) {
+    button1State = HIGH; // button state changed from low to high
+    Serial.println("Button 1 State: ON");
+  }
 }
 
-void interruptRising2() {
-  Serial.println("Button 2 State: ON");
+void interruptChange2() {
+  if (button2State == HIGH) {
+    button2State = LOW; // button state changed from high to low
+    Serial.println("Button 2 State: OFF");
+  } else if (button2State == LOW) {
+    button2State = HIGH; // button state changed from low to high
+    Serial.println("Button 2 State: ON");
+  }
 }
 
-void interruptRising3() {
-  Serial.println("Button 3 State: ON");
+void interruptChange3() {
+  if (button3State == HIGH) {
+    button3State = LOW; // button state changed from high to low
+    Serial.println("Button 3 State: OFF");
+  } else if (button3State == LOW) {
+    button3State = HIGH; // button state changed from low to high
+    Serial.println("Button 3 State: ON");
+  }
 }
 
-void interruptFalling1() {
-  Serial.println("Button 1 State: OFF");
-}
-
-void interruptFalling2() {
-  Serial.println("Button 2 State: OFF");
-}
-
-void interruptFalling3() {
-  Serial.println("Button 3 State: OFF");
-}
 
 void setLed(int onTime, int offTime) {
   unsigned long currentMillis = millis();
