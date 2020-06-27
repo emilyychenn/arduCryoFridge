@@ -3,9 +3,8 @@ const int buttonPin = 2;
 const int button2Pin = 4;
 const int button3Pin = 7;
 
-int ontime = 1000;
-int offtime = 1000;
-//int timetostart; // was int when used for delay(); should be changed when interrupt is added
+int ontime = 5000;
+int offtime = 5000;
 unsigned long timetostart;
 char menuInput;
 int ledState = LOW;
@@ -20,6 +19,8 @@ int lastButton3State = 0;
 unsigned long previousMillis = 0; // last time LED was updated
 long onTime = 1000;  // default; will be changed through commands
 long offTime = 1000; // default; will be changed through commands
+
+String arduinoProgramVersion = "1.0";
 
 
 void setup() {
@@ -120,21 +121,12 @@ void menuOptions() {
     case 'Z':
       // start on/off cycle in xxx minutes
       timetostart = Serial.parseInt();
-      unsigned long previousTime = millis();
       Serial.print("UNO will start on/off cycle in: ");
       Serial.println(timetostart);
-//      delay(timetostart);
-
-      // TODO:
-      // because of this section, we need an interrupt (i.e. when delay time is set to 10 secs, button pushes aren't shown until after delay is over)
-      unsigned long currentTime = millis();
-      while (currentTime - previousTime < timetostart) {
-        previousTime = currentTime;
-      }
+      delay(timetostart);   // can use delay since delay function does not disable interrupts!
       break;
     case 'S':
       // report status of all switches
-      Serial.println("Report status of all switches");
       if (ledState == HIGH) {
         Serial.println("Status of pin: ON");
       } else if (ledState == LOW) {
@@ -143,7 +135,7 @@ void menuOptions() {
       break;
     case 'Q':
       // print name of version of arduino code
-      Serial.println("Version of arduino code: ___");
+      Serial.println("Version of arduino code: " + arduinoProgramVersion);
       break;
     case '?':
       // print help screen
