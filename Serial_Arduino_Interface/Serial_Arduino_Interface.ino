@@ -1,3 +1,5 @@
+#include <EnableInterrupt.h> // for the third pin (on arduino UNO only 2 pins are setup to handle interrupts)
+
 const int ledPin = 13;
 const int button1Pin = 2;
 const int button2Pin = 3;
@@ -19,23 +21,24 @@ long offTime = 1000; // default; will be changed through commands
 String arduinoProgramVersion = "1.0";
 
 
+
 void setup() {
   pinMode(ledPin, OUTPUT);
-  
+
   pinMode(button1Pin, INPUT_PULLUP);
   pinMode(button2Pin, INPUT_PULLUP);
   pinMode(button3Pin, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(button1Pin), interruptChange1, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(button2Pin), interruptChange2, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(button3Pin), interruptChange3, CHANGE);
-  
+  enableInterrupt(button1Pin, interruptChange1, CHANGE);
+  enableInterrupt(button2Pin, interruptChange2, CHANGE);
+  enableInterrupt(button3Pin, interruptChange3, CHANGE);
+
   Serial.begin(9600);
   Serial.println("UNO is ready!");
 }
 
 
 void loop() {
-  if(Serial.available()) {
+  if (Serial.available()) {
     menuOptions();
   }
   setLed(ontime, offtime);
@@ -78,13 +81,13 @@ void setLed(int onTime, int offTime) {
 
   // if the LED is off, turn it on, and vice-versa:
   if ((ledState == HIGH) && (currentMillis - previousMillis >= onTime)) {
-      ledState = LOW;
-      previousMillis = currentMillis;
-      digitalWrite(ledPin, ledState);
+    ledState = LOW;
+    previousMillis = currentMillis;
+    digitalWrite(ledPin, ledState);
   } else if ((ledState == LOW) && (currentMillis - previousMillis >= offTime)) {
-      ledState = HIGH;
-      previousMillis = currentMillis;
-      digitalWrite(ledPin, ledState);
+    ledState = HIGH;
+    previousMillis = currentMillis;
+    digitalWrite(ledPin, ledState);
   }
 }
 
@@ -115,6 +118,7 @@ void menuOptions() {
       Serial.print("UNO will start on/off cycle in: ");
       Serial.println(timetostart);
       delay(timetostart);   // can use delay since delay function does not disable interrupts!
+      Serial.println("On/off cycle starting now.");
       break;
     case 'S':  // report status of all switches
       if (ledState == HIGH) {
