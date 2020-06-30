@@ -22,7 +22,7 @@ Options:
 from docopt import docopt
 import serial
 import serial.tools.list_ports
-# from gi.repository import Gtk
+import logging
 
 baud = 9600
 programVersion = 1.0
@@ -50,18 +50,37 @@ elif args['--autoport'] != False:
         if desc == "USB2.0-Serial":
             try:
                 ser = serial.Serial(port, baud, timeout = 0.05)
-                # textbuff.insert_at_cursor("Connected to: " + port + '\n', -1)
                 print("Connected to: " + port + '\n')
                 connected = True
                 break
             except Exception as e:
-                # textbuff.insert_at_cursor("\nCouldn't open port: " + str(e), -1)
                 print("\nCouldn't open port: " + str(e))
                 ser = None
     if not(connected):
-        # textbuff.insert_at_cursor("No likely serial port found\n", -1)
         print("No likely serial port found. Use command '--port=<USBportname>' to manually specify port")
 
+# log all button interrupts as warnings
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.WARNING)
+consoleHandler = logging.StreamHandler()
+consoleHandler.setLevel(logging.WARNING)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+consoleHandler.setFormatter(formatter)
+logger.addHandler(consoleHandler)
+logger.warning('warning message') # for testing
+
+# logging.basicConfig(filename='arduCryoFridge.log', filemode='w', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
+
+
+# try:
+    # ser.readline().strip()
+    # while True:
+        # if ((ser.readline().strip())[:6] == "Button"):
+            # buttonOutput = ser.readline()
+            # logging.warning('Status has changed: %s', buttonOutput)
+            # print("logged status change")
+# except:
+    # pass
 
 if args['configure'] == True:
     if args['--ontime'] != None:
@@ -90,6 +109,7 @@ elif args['switch'] == True:
             delay = args['--delay']
             print("delay turning off by " + str(delay) + " minutes")
             ser.write(('Z'+str(delay)).encode())
+            print(ser.readline())
             
 elif args['--status'] != False:
     print("PT410 status: ")

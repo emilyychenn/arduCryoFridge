@@ -4,9 +4,9 @@ const int ledPin = 13;
 const int button1Pin = 2;
 const int button2Pin = 3;
 const int button3Pin = 7;
-int button1State = 0;
-int button2State = 0;
-int button3State = 0;
+volatile int button1State = 0;
+volatile int button2State = 0;
+volatile int button3State = 0;
 
 int ontime = 5000;
 int offtime = 5000;
