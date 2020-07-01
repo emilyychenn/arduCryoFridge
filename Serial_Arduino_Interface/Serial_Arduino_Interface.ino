@@ -123,6 +123,7 @@ void menuOptions() {
     case 'S':  // report status of all switches
       if (ledState == HIGH) {
         Serial.println("Status of pin: ON");
+        // TODO PRINT STATUS OF BUTTONS
       } else if (ledState == LOW) {
         Serial.println("Status of pin: OFF");
       }

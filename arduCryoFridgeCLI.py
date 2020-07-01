@@ -22,7 +22,6 @@ Options:
 from docopt import docopt
 import serial
 import serial.tools.list_ports
-import logging
 
 baud = 9600
 programVersion = 1.0
@@ -59,28 +58,6 @@ elif args['--autoport'] != False:
     if not(connected):
         print("No likely serial port found. Use command '--port=<USBportname>' to manually specify port")
 
-# log all button interrupts as warnings
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
-consoleHandler = logging.StreamHandler()
-consoleHandler.setLevel(logging.WARNING)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-consoleHandler.setFormatter(formatter)
-logger.addHandler(consoleHandler)
-logger.warning('warning message') # for testing
-
-# logging.basicConfig(filename='arduCryoFridge.log', filemode='w', format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%m/%d/%Y %I:%M:%S %p')
-
-
-# try:
-    # ser.readline().strip()
-    # while True:
-        # if ((ser.readline().strip())[:6] == "Button"):
-            # buttonOutput = ser.readline()
-            # logging.warning('Status has changed: %s', buttonOutput)
-            # print("logged status change")
-# except:
-    # pass
 
 if args['configure'] == True:
     if args['--ontime'] != None:
