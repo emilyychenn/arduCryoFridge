@@ -8,18 +8,16 @@ volatile int button1State = 0;
 volatile int button2State = 0;
 volatile int button3State = 0;
 
-int ontime = 5000;
-int offtime = 5000;
-unsigned long timetostart;
+unsigned long ontime, offtime; 
+unsigned long ontimeMS, offtimeMS;  //= 5000; // 5 seconds
+unsigned long timetostart, timetostartMS;
 char menuInput;
 int ledState = LOW;
 
 unsigned long previousMillis = 0; // last time LED was updated
-long onTime = 1000;  // default; will be changed through commands
-long offTime = 1000; // default; will be changed through commands
+unsigned long onTime, offTime;
 
 String arduinoProgramVersion = "1.0";
-
 
 
 void setup() {
@@ -35,7 +33,6 @@ void setup() {
   Serial.begin(9600);
   Serial.println("UNO is ready!");
 }
-
 
 void loop() {
   if (Serial.available()) {
@@ -79,15 +76,21 @@ void interruptChange3() {
 void setLed(int onTime, int offTime) {
   unsigned long currentMillis = millis();
 
+  unsigned long onTimeMS = onTime*60000;
+  unsigned long offTimeMS = offTime*60000;
   // if the LED is off, turn it on, and vice-versa:
-  if ((ledState == HIGH) && (currentMillis - previousMillis >= onTime)) {
+  if ((ledState == HIGH) && (currentMillis - previousMillis >= onTimeMS)) {
     ledState = LOW;
     previousMillis = currentMillis;
     digitalWrite(ledPin, ledState);
-  } else if ((ledState == LOW) && (currentMillis - previousMillis >= offTime)) {
+  } else if ((ledState == LOW) && (currentMillis - previousMillis >= offTimeMS)) {
     ledState = HIGH;
     previousMillis = currentMillis;
     digitalWrite(ledPin, ledState);
+  } else {
+    Serial.print("Time remaining before switch: ");
+    Serial.print(onTimeMS - (currentMillis - previousMillis));
+    Serial.println(" milliseconds");
   }
 }
 
@@ -97,13 +100,16 @@ void menuOptions() {
   switch (menuInput) {
     case 'A':
       ontime = Serial.parseInt();
+      ontimeMS = ontime*60000; // converts from mins to milliseconds
       Serial.print("UNO received ontime: ");
-      Serial.println(ontime);
+      Serial.print(ontime);
+      Serial.println(" minutes");
       break;
     case 'B':
       offtime = Serial.parseInt();
       Serial.print("UNO received offtime: ");
-      Serial.println(offtime);
+      Serial.print(offtime);
+      Serial.println(" minutes");
       break;
     case 'G':  // switch compressor on NOW
       Serial.println("Switch compressor on NOW"); // cycle continues
@@ -115,9 +121,10 @@ void menuOptions() {
       break;
     case 'Z':  // start on/off cycle in xxx minutes
       timetostart = Serial.parseInt();
+      timetostartMS = timetostart*60000;
       Serial.print("UNO will start on/off cycle in: ");
       Serial.println(timetostart);
-      delay(timetostart);   // can use delay since delay function does not disable interrupts!
+      delay(timetostartMS);   // can use delay since delay function does not disable interrupts!
       Serial.println("On/off cycle starting now.");
       break;
     case 'S':  // report status of all switches
