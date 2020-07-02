@@ -22,7 +22,6 @@ Options:
 from docopt import docopt
 import serial
 import serial.tools.list_ports
-# from gi.repository import Gtk
 
 baud = 9600
 programVersion = 1.0
@@ -50,16 +49,13 @@ elif args['--autoport'] != False:
         if desc == "USB2.0-Serial":
             try:
                 ser = serial.Serial(port, baud, timeout = 0.05)
-                # textbuff.insert_at_cursor("Connected to: " + port + '\n', -1)
                 print("Connected to: " + port + '\n')
                 connected = True
                 break
             except Exception as e:
-                # textbuff.insert_at_cursor("\nCouldn't open port: " + str(e), -1)
                 print("\nCouldn't open port: " + str(e))
                 ser = None
     if not(connected):
-        # textbuff.insert_at_cursor("No likely serial port found\n", -1)
         print("No likely serial port found. Use command '--port=<USBportname>' to manually specify port")
 
 
@@ -90,6 +86,7 @@ elif args['switch'] == True:
             delay = args['--delay']
             print("delay turning off by " + str(delay) + " minutes")
             ser.write(('Z'+str(delay)).encode())
+            print(ser.readline())
             
 elif args['--status'] != False:
     print("PT410 status: ")
