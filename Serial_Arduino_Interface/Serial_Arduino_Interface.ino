@@ -8,9 +8,10 @@ volatile int button1State = 0;
 volatile int button2State = 0;
 volatile int button3State = 0;
 
-unsigned long ontime, offtime; 
-unsigned long ontimeMS, offtimeMS;  //= 5000; // 5 seconds
-unsigned long timetostart, timetostartMS;
+unsigned long ontime = 1; //default 1 minute
+unsigned long offtime = 1; //default 1 minute
+unsigned long onTimeMS, offTimeMS, ontimeMS, offtimeMS;
+unsigned long timetostart, timetostartMS, currentMillis;
 char menuInput;
 int ledState = LOW;
 
@@ -74,10 +75,10 @@ void interruptChange3() {
 
 
 void setLed(int onTime, int offTime) {
-  unsigned long currentMillis = millis();
-
-  unsigned long onTimeMS = onTime*60000;
-  unsigned long offTimeMS = offTime*60000;
+  currentMillis = millis();
+  onTimeMS = onTime*60000;
+  offTimeMS = offTime*60000;
+  
   // if the LED is off, turn it on, and vice-versa:
   if ((ledState == HIGH) && (currentMillis - previousMillis >= onTimeMS)) {
     ledState = LOW;
@@ -88,9 +89,9 @@ void setLed(int onTime, int offTime) {
     previousMillis = currentMillis;
     digitalWrite(ledPin, ledState);
   } else {
-    Serial.print("Time remaining before switch: ");
-    Serial.print(onTimeMS - (currentMillis - previousMillis));
-    Serial.println(" milliseconds");
+//    Serial.print("Time remaining before switch: ");
+//    Serial.print(onTimeMS - (currentMillis - previousMillis));
+//    Serial.println(" milliseconds");
   }
 }
 
@@ -112,12 +113,20 @@ void menuOptions() {
       Serial.println(" minutes");
       break;
     case 'G':  // switch compressor on NOW
-      Serial.println("Switch compressor on NOW"); // cycle continues
+    // cycle resets so the compressor will turn off starting after this cycle... 
+    // meaning it goes through two cycles of on time before going back to on as of right now
+      Serial.println("Switch compressor on NOW"); 
       digitalWrite(ledPin, HIGH);
+      ledState = HIGH;
+      previousMillis = currentMillis; //+ or - ontimeMS doesn't seem to make a difference...
       break;
     case 'X':  //switch compressor off NOW
-      Serial.println("Switch compressor off NOW"); // cycle continues
+    // cycle resets so the compressor will turn on starting after this cycle... 
+    // meaning it goes through two cycles of off time before going back to on as of right now
+      Serial.println("Switch compressor off NOW"); 
       digitalWrite(ledPin, LOW);
+      ledState = LOW;
+      previousMillis = currentMillis; //+ or - ontimeMS doesn't seem to make a difference...
       break;
     case 'Z':  // start on/off cycle in xxx minutes
       timetostart = Serial.parseInt();
@@ -129,10 +138,45 @@ void menuOptions() {
       break;
     case 'S':  // report status of all switches
       if (ledState == HIGH) {
-        Serial.println("Status of pin: ON");
-        // TODO PRINT STATUS OF BUTTONS
+        Serial.println("Status of LED: ON");
+        Serial.print("Status of Button 1: ");
+          if(button1State == HIGH) {
+            Serial.println("ON");
+          } else {
+            Serial.println("OFF");
+          }
+        Serial.print("Status of Button 2: ");
+          if(button2State == HIGH) {
+            Serial.println("ON");
+          } else {
+            Serial.println("OFF");
+          }
+        Serial.print("Status of Button 3: ");
+          if(button3State == HIGH) {
+            Serial.println("ON");
+          } else {
+            Serial.println("OFF");
+          }
       } else if (ledState == LOW) {
-        Serial.println("Status of pin: OFF");
+        Serial.println("Status of LED: OFF");
+        Serial.print("Status of Button 1: ");
+          if(button1State == HIGH) {
+            Serial.println("ON");
+          } else {
+            Serial.println("OFF");
+          }
+        Serial.print("Status of Button 2: ");
+          if(button2State == HIGH) {
+            Serial.println("ON");
+          } else {
+            Serial.println("OFF");
+          }
+        Serial.print("Status of Button 3: ");
+          if(button3State == HIGH) {
+            Serial.println("ON");
+          } else {
+            Serial.println("OFF");
+          }
       }
       break;
     case 'Q':  // print name of version of arduino code

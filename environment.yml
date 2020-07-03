@@ -1,0 +1,11 @@
+# The name of the environment matching the repository name
+name: arduCryoFridge-env
+# I prefer conda-forge packages for my projects
+channels:
+        - conda-forge
+        - defaults
+# Start with Python and include everything you need
+dependencies:
+        - python=3.7
+        - docopt
+        - pyserial
