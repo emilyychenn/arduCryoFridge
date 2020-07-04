@@ -1,21 +1,21 @@
 """
 Usage:
+  arduCryoFridgeCLI.py [--port=<USBportname> | --autoport]
   arduCryoFridgeCLI.py configure [--ontime=<ontime>] [--offtime=<offtime>]
   arduCryoFridgeCLI.py switch [--on | --off] [--now | --delay=<delay>]
-  arduCryoFridgeCLI.py -s | --status
   arduCryoFridgeCLI.py -h | --help
+  arduCryoFridgeCLI.py -s | --status
   arduCryoFridgeCLI.py -q
-  arduCryoFridgeCLI.py (--port=<USBportname> | --autoport)
   
 Options:
+  --port=<USBportname>  Specify USB port: must be done before running any other commands
+  --autoport            automatically detect USB port: alternative that must be done before running other commands
   --ontime=<ontime>     duration of ontime minutes.
   --offtime=<offtime>   duration of offtime minutes.
   --delay=<delay>       start on/off cycle in delay [default: 0] minutes.
   -s --status           Read out and report PT410 status
   -h --help             Show this screen.
   -q                    Query program version + version run on the arduino
-  --port=<USBportname>  Specify USB port: must be done before running any other commands
-  --autoport            automatically detect USB port: alternative that must be done before running other commands
 
 """
 
@@ -29,7 +29,6 @@ programVersion = 1.0
 
 # will try to autodetect port first, if no port detected, will prompt user to input a port
 # doesn't work with third-party Arduino knockoffs (in which case, user specifies port)
-
 def autodetect():
     ports = serial.tools.list_ports.comports()
     connected = False
@@ -49,12 +48,11 @@ def autodetect():
         print("No likely serial port found.")
 
 
-# usbPort needs to be defined first, but can't be defined before args is defined!
-usbPort = None
 if __name__ == "__main__":
     args = docopt(__doc__)  # docopt saves arguments and options as key:value pairs in a dictionary
     try:
-        args['--port'] = usbPort
+        if args['--port'] == None:
+            args['--port'] = usbPort
     except NameError:
         autodetect()
     print(args)
@@ -62,14 +60,16 @@ if __name__ == "__main__":
 
 # NOTE: MUST SPECIFY OR AUTODETECT PORT BEFORE RUNNING ANY OTHER COMMANDS, OTHERWISE NOTHING WORKS
 if args['--port'] != None:
-    usbPort = args['--port']
+    # ser = serial.Serial(usbPort, baud)
     try:
+        usbPort = args['--port']
         ser = serial.Serial(usbPort, baud)
     except:
-        print("\nCouldn't find port: " + str(usbPort))
+    # except FileNotFoundError:
+        wrongPort = args['--port']
+        print("\nCouldn't find port: " + str(wrongPort))
         ser = None
 elif args['--autoport'] != False:
-    # doesn't work with third-party Arduino knockoffs (in which case, user specifies port)
     autodetect()
 
 if args['--port'] != None:
@@ -105,23 +105,15 @@ if args['--port'] != None:
     elif args['--status'] != False:
         print("PT410 status: ")
         ser.write('S'.encode())
-        ser.readline()
-        ser.flush()
-        if ser.readline() == 'Status of Button':
-            ser.readline()
-        # else # FIX STATUS
-        arduinoStatus = ser.readline()
-        ser.flush()
+        LEDStatus = ser.readline()
+        print(LEDStatus)
         button1Status = ser.readline()
-        ser.flush()
-        button2Status = ser.readline()
-        ser.flush()
-        button3Status = ser.readline()
-        ser.flush()
-        print(arduinoStatus)
         print(button1Status)
+        button2Status = ser.readline()
         print(button2Status)
+        button3Status = ser.readline()
         print(button3Status)
+        
         
     elif args['-q'] != False:
         print("Python program version: " + str(programVersion))
