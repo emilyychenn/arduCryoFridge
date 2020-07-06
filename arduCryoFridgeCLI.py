@@ -2,18 +2,18 @@
 Usage:
   arduCryoFridgeCLI.py [--port=<USBportname>] configure [--ontime=<ontime>] [--offtime=<offtime>]
   arduCryoFridgeCLI.py [--port=<USBportname>] switch [--on | --off] [--now | --delay=<delay>]
-  arduCryoFridgeCLI.py -h | --help
   arduCryoFridgeCLI.py [--port=<USBportname>] [-s | --status]
   arduCryoFridgeCLI.py [--port=<USBportname>] [-q]
+  arduCryoFridgeCLI.py -h | --help
   
 Options:
-  --port=<USBportname>  Specify USB port: must be done before running any other commands
-  --ontime=<ontime>     duration of ontime minutes.
-  --offtime=<offtime>   duration of offtime minutes.
-  --delay=<delay>       start on/off cycle in delay [default: 0] minutes.
-  -s --status           Read out and report PT410 status
+  --port=<USBportname>  Specify USB port: done before running other commands.
+  --ontime=<ontime>     Duration of ontime minutes.
+  --offtime=<offtime>   Duration of offtime minutes.
+  --delay=<delay>       Start on/off cycle in delay [default: 0] minutes.
+  -s --status           Read out and report PT410 status.
+  -q                    Query program version + version run on the arduino.
   -h --help             Show this screen.
-  -q                    Query program version + version run on the arduino
 
 """
 
@@ -71,33 +71,40 @@ if args['--port'] != None:
         if args['--ontime'] != None:
             ontime = args['--ontime']
             print("Ontime = " + ontime)
+            ser.readline() # waits until arduino prints "UNO is ready!"
             ser.write(('A'+ str(ontime)).encode())
         elif args['--offtime'] != None:
             offtime = args['--offtime']
             print("Offtime = " + offtime)
+            ser.readline()
             ser.write(('B'+ str(offtime)).encode())
             
     elif args['switch'] == True:
         if args['--on'] == True:
             if args['--now'] == True:
                 print("switch compressor on NOW")
+                ser.readline()
                 ser.write('G'.encode())
             else:
                 delay = args['--delay']
                 print("delay turning on by " + str(delay) + " minutes")
+                ser.readline()
                 ser.write(('Z'+str(delay)).encode())
         elif args['--off'] == True:
             if args['--now'] == True:
                 print("switch compressor off NOW")
+                ser.readline()
                 ser.write('X'.encode())
             else:
                 delay = args['--delay']
                 print("delay turning off by " + str(delay) + " minutes")
+                ser.readline()
                 ser.write(('Z'+str(delay)).encode())
                 print(ser.readline())
                 
     elif args['--status'] != False:
         print("PT410 status: ")
+        ser.readline()
         ser.write('S'.encode())
         LEDStatus = ser.readline()
         print(LEDStatus)
@@ -111,9 +118,10 @@ if args['--port'] != None:
         
     elif args['-q'] != False:
         print("Python program version: " + str(programVersion))
+        ser.readline()
         ser.write('Q'.encode())
         arduinoProgramVersion = ser.readline()
-        print("Arduino program version: " + str(arduinoProgramVersion))
+        print(str(arduinoProgramVersion))
 else:
     print("Enter a serial port. Use command '--port=<USBportname>' to manually specify a port, or '--autoport' to try automatically detecting again.")
                 
