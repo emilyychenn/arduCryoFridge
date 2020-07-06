@@ -1,15 +1,13 @@
 """
 Usage:
-  arduCryoFridgeCLI.py [--port=<USBportname> | --autoport]
-  arduCryoFridgeCLI.py configure [--ontime=<ontime>] [--offtime=<offtime>]
-  arduCryoFridgeCLI.py switch [--on | --off] [--now | --delay=<delay>]
+  arduCryoFridgeCLI.py [--port=<USBportname>] configure [--ontime=<ontime>] [--offtime=<offtime>]
+  arduCryoFridgeCLI.py [--port=<USBportname>] switch [--on | --off] [--now | --delay=<delay>]
   arduCryoFridgeCLI.py -h | --help
-  arduCryoFridgeCLI.py -s | --status
-  arduCryoFridgeCLI.py -q
+  arduCryoFridgeCLI.py [--port=<USBportname>] [-s | --status]
+  arduCryoFridgeCLI.py [--port=<USBportname>] [-q]
   
 Options:
   --port=<USBportname>  Specify USB port: must be done before running any other commands
-  --autoport            automatically detect USB port: alternative that must be done before running other commands
   --ontime=<ontime>     duration of ontime minutes.
   --offtime=<offtime>   duration of offtime minutes.
   --delay=<delay>       start on/off cycle in delay [default: 0] minutes.
@@ -60,18 +58,14 @@ if __name__ == "__main__":
 
 # NOTE: MUST SPECIFY OR AUTODETECT PORT BEFORE RUNNING ANY OTHER COMMANDS, OTHERWISE NOTHING WORKS
 if args['--port'] != None:
-    # ser = serial.Serial(usbPort, baud)
     try:
         usbPort = args['--port']
         ser = serial.Serial(usbPort, baud)
-    except:
-    # except FileNotFoundError:
+    except (FileNotFoundError, OSError) as e:
         wrongPort = args['--port']
         print("\nCouldn't find port: " + str(wrongPort))
         ser = None
-elif args['--autoport'] != False:
-    autodetect()
-
+        
 if args['--port'] != None:
     if args['configure'] == True:
         if args['--ontime'] != None:

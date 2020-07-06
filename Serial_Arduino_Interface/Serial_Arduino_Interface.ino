@@ -11,7 +11,7 @@ volatile int button3State = 0;
 unsigned long ontime = 1; //default 1 minute
 unsigned long offtime = 1; //default 1 minute
 unsigned long onTimeMS, offTimeMS, ontimeMS, offtimeMS;
-unsigned long timetostart, timetostartMS, currentMillis;
+unsigned long timetostart, timetostartMS, currentMillis, currentTime, previousTime;
 char menuInput;
 int ledState = LOW;
 
@@ -78,8 +78,7 @@ void setLed(int onTime, int offTime) {
   currentMillis = millis();
   onTimeMS = onTime*60000;
   offTimeMS = offTime*60000;
-  
-  // if the LED is off, turn it on, and vice-versa:
+
   if ((ledState == HIGH) && (currentMillis - previousMillis >= onTimeMS)) {
     ledState = LOW;
     previousMillis = currentMillis;
@@ -89,9 +88,30 @@ void setLed(int onTime, int offTime) {
     previousMillis = currentMillis;
     digitalWrite(ledPin, ledState);
   } else {
-//    Serial.print("Time remaining before switch: ");
-//    Serial.print(onTimeMS - (currentMillis - previousMillis));
-//    Serial.println(" milliseconds");
+    Serial.print("Time remaining before switch: ");
+    Serial.print(onTimeMS - (currentMillis - previousMillis));
+    Serial.println(" milliseconds");
+  }
+}
+
+
+void delayLed(unsigned long delayTime) {
+  while (1) {
+    currentTime = millis();
+  
+    if (currentTime - previousTime >= delayTime) {
+      break;
+    } else {
+      if (Serial.available() && (Serial.parseInt() != timetostart)) {
+          Serial.print("else Serial output: ");
+          Serial.println(Serial.parseInt());
+          break;
+      } else {
+         Serial.print("Time remaining before start: ");
+         Serial.print(delayTime - (currentTime - previousTime));
+         Serial.println(" milliseconds");
+      }
+    }
   }
 }
 
@@ -112,29 +132,33 @@ void menuOptions() {
       Serial.print(offtime);
       Serial.println(" minutes");
       break;
-    case 'G':  // switch compressor on NOW
-    // cycle resets so the compressor will turn off starting after this cycle... 
-    // meaning it goes through two cycles of on time before going back to on as of right now
+    case 'G':  // switch compressor on NOW and keep it on for the specified ontime (restart from when G is entered)
       Serial.println("Switch compressor on NOW"); 
       digitalWrite(ledPin, HIGH);
       ledState = HIGH;
-      previousMillis = currentMillis; //+ or - ontimeMS doesn't seem to make a difference...
+      previousMillis = millis();
       break;
-    case 'X':  //switch compressor off NOW
-    // cycle resets so the compressor will turn on starting after this cycle... 
-    // meaning it goes through two cycles of off time before going back to on as of right now
+    case 'X':  //switch compressor off NOW and keep it off for the specified offtime (restart from when X is entered)
       Serial.println("Switch compressor off NOW"); 
       digitalWrite(ledPin, LOW);
       ledState = LOW;
-      previousMillis = currentMillis; //+ or - ontimeMS doesn't seem to make a difference...
+      previousMillis = millis();
       break;
     case 'Z':  // start on/off cycle in xxx minutes
       timetostart = Serial.parseInt();
       timetostartMS = timetostart*60000;
       Serial.print("UNO will start on/off cycle in: ");
       Serial.println(timetostart);
-      delay(timetostartMS);   // can use delay since delay function does not disable interrupts!
-      Serial.println("On/off cycle starting now.");
+      previousTime = millis();
+      delayLed(timetostartMS);
+      
+
+//      previousMillis = millis() + timetostartMS;
+      
+//      delay(timetostartMS);   // can use delay since delay function does not disable interrupts!
+
+      
+//      Serial.println("On/off cycle starting now.");
       break;
     case 'S':  // report status of all switches
       if (ledState == HIGH) {
