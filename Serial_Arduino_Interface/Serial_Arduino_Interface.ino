@@ -10,14 +10,14 @@ volatile int button3State = 0;
 
 unsigned long ontime = 1; //default 1 minute
 unsigned long offtime = 1; //default 1 minute
-unsigned long onTimeMS, offTimeMS, ontimeMS, offtimeMS;
-unsigned long timetostart, timetostartMS, currentMillis, currentTime, previousTime, delayTimeMS;
-unsigned long delayTime = 0;
-char menuInput;
-int ledState = LOW;
-
+unsigned long onTime, offTime, onTimeMS, offTimeMS, delayTimeMS;
+unsigned long timetostart, timetostartMS, currentMillis;
 unsigned long previousMillis = 0; // last time LED was updated
-unsigned long onTime, offTime;
+unsigned long delayTime = 0;
+int ledState = LOW;
+int cycleMode = 0; // 0 = auto-cycling, 1 = manual
+
+char menuInput;
 
 String arduinoProgramVersion = "1.0";
 
@@ -76,54 +76,58 @@ void interruptChange3() {
 
 
 void setLed(int onTime, int offTime, unsigned long delayTime) {
-  currentMillis = millis();
-  onTimeMS = onTime*60000;
-  offTimeMS = offTime*60000;
-  delayTimeMS = delayTime*60000;
-
-  if (delayTime == 0) {
-    if ((ledState == HIGH) && (currentMillis - previousMillis >= onTimeMS)) {
-      ledState = LOW;
-      previousMillis = currentMillis;
-      digitalWrite(ledPin, ledState);
-    } else if ((ledState == LOW) && (currentMillis - previousMillis >= offTimeMS)) {
-      ledState = HIGH;
-      previousMillis = currentMillis;
-      digitalWrite(ledPin, ledState);
-    } else {
-       // for testing:
-       // Serial.print("Time remaining before switch: ");
-       // Serial.print(onTimeMS - (currentMillis - previousMillis));
-       // Serial.println(" milliseconds");
-    }
-  } else if (delayTime != 0) {
-    if (ledState == HIGH) {
-      onTimeMS = onTimeMS + delayTimeMS;
-      if ((currentMillis - previousMillis >= onTimeMS)) {
-        Serial.println("On/off cycle starting now.");
+  if (cycleMode == 0) {
+    currentMillis = millis();
+    onTimeMS = onTime*60000;
+    offTimeMS = offTime*60000;
+    delayTimeMS = delayTime*60000;
+  
+    if (delayTime == 0) {
+      if ((ledState == HIGH) && (currentMillis - previousMillis >= onTimeMS)) {
         ledState = LOW;
         previousMillis = currentMillis;
         digitalWrite(ledPin, ledState);
-        onTimeMS = onTimeMS - delayTimeMS; //returns it back to original ontime
-      } else {
-        // for testing:
-        // Serial.print("Time remaining in delay: ");
-        // Serial.print(onTimeMS - (currentMillis - previousMillis));
-        // Serial.println(" milliseconds");
-      }
-    } else { //ledState is LOW
-      offTimeMS = offTimeMS + delayTimeMS;
-      if ((currentMillis - previousMillis >= offTimeMS)) {
-        Serial.println("On/off cycle starting now.");
+      } else if ((ledState == LOW) && (currentMillis - previousMillis >= offTimeMS)) {
         ledState = HIGH;
         previousMillis = currentMillis;
         digitalWrite(ledPin, ledState);
-        offTimeMS = offTimeMS - delayTimeMS; //returns it back to original offtime
       } else {
-        // for testing:
-        // Serial.print("Time remaining in delay: ");
-        // Serial.print(offTimeMS - (currentMillis - previousMillis));
-        // Serial.println(" milliseconds");
+         // for testing:
+          Serial.print("Time remaining before switch: ");
+          Serial.print(onTimeMS - (currentMillis - previousMillis));
+          Serial.println(" milliseconds");
+      }
+    } else if (delayTime != 0) {
+        if (ledState == HIGH) {
+          onTimeMS = onTimeMS + delayTimeMS;
+          if ((currentMillis - previousMillis >= onTimeMS)) {
+            Serial.println("On/off cycle starting now.");
+            ledState = LOW;
+            previousMillis = currentMillis;
+            digitalWrite(ledPin, ledState);
+            onTimeMS = onTimeMS - delayTimeMS; //returns it back to original ontime
+            delayTime = 0;
+          } else {
+            // for testing:
+            // Serial.print("LED is currently on. Time remaining before turning off: ");
+            // Serial.print(onTimeMS - (currentMillis - previousMillis));
+            // Serial.println(" milliseconds");
+          }
+        } else { //ledState is LOW
+          offTimeMS = offTimeMS + delayTimeMS;
+          if ((currentMillis - previousMillis >= offTimeMS)) {
+            Serial.println("On/off cycle starting now.");
+            ledState = HIGH;
+            previousMillis = currentMillis;
+            digitalWrite(ledPin, ledState);
+            offTimeMS = offTimeMS - delayTimeMS; //returns it back to original offtime
+            delayTime = 0;
+          } else {
+            // for testing:
+             Serial.print("LED is currently off. Time remaining before turning on: ");
+             Serial.print(offTimeMS - (currentMillis - previousMillis));
+             Serial.println(" milliseconds");
+          }
       }
     }
   }
@@ -135,7 +139,6 @@ void menuOptions() {
   switch (menuInput) {
     case 'A':
       ontime = Serial.parseInt();
-      ontimeMS = ontime*60000; // converts from mins to milliseconds
       Serial.print("UNO received ontime: ");
       Serial.print(ontime);
       Serial.println(" minutes");
@@ -146,25 +149,28 @@ void menuOptions() {
       Serial.print(offtime);
       Serial.println(" minutes");
       break;
-    case 'G':  // switch compressor on NOW and keep it on for the specified ontime (restart from when G is entered)
+    case 'G':  // switch compressor on NOW and keep it on
       Serial.println("Switch compressor on NOW"); 
       digitalWrite(ledPin, HIGH);
       ledState = HIGH;
-      previousMillis = millis();
+      cycleMode = 1;
       break;
-    case 'X':  //switch compressor off NOW and keep it off for the specified offtime (restart from when X is entered)
+    case 'X':  //switch compressor off NOW and keep it off
       Serial.println("Switch compressor off NOW"); 
       digitalWrite(ledPin, LOW);
       ledState = LOW;
-      previousMillis = millis();
+      cycleMode = 1;
       break;
     case 'Z':  // start on/off cycle in xxx minutes
       timetostart = Serial.parseInt();
       Serial.print("UNO will start on/off cycle in: ");
       Serial.print(timetostart);
       Serial.println(" mins");
-      previousTime = millis(); // cycle will resume at whatever time it was currently at. 
-      delayTime = timetostart; // To restart entire on/off time, use command G or X
+      cycleMode = 0;
+      previousMillis = millis(); // cycle will restart (i.e. if it was on before, it would stay on for delayTime + onTime)
+      // delete above line for cycle to continue from where it left off (i.e. if there was 15 seconds of ontime left, 
+      // the led would stay on for (delayTime + 15 seconds remaining))
+      delayTime = timetostart;
       break;
     case 'S':  // report status of all switches
       if (ledState == HIGH) {
