@@ -124,9 +124,9 @@ void setLed(int onTime, int offTime, unsigned long delayTime) {
             delayTime = 0;
           } else {
             // for testing:
-             Serial.print("LED is currently off. Time remaining before turning on: ");
-             Serial.print(offTimeMS - (currentMillis - previousMillis));
-             Serial.println(" milliseconds");
+            // Serial.print("LED is currently off. Time remaining before turning on: ");
+            // Serial.print(offTimeMS - (currentMillis - previousMillis));
+            // Serial.println(" milliseconds");
           }
       }
     }
