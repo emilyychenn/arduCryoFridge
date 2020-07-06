@@ -5,7 +5,7 @@ from datetime import date, time, timedelta, datetime
 import time
 import os
 
-usbPort = '/dev/cu.usbmodem14201'
+usbPort = '/dev/cu.usbmodem14101'
 baud = 9600
 ser = serial.Serial(usbPort, baud)
 
