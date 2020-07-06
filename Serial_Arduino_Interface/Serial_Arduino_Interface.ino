@@ -93,9 +93,9 @@ void setLed(int onTime, int offTime, unsigned long delayTime) {
         digitalWrite(ledPin, ledState);
       } else {
          // for testing:
-          Serial.print("Time remaining before switch: ");
-          Serial.print(onTimeMS - (currentMillis - previousMillis));
-          Serial.println(" milliseconds");
+         // Serial.print("Time remaining before switch: ");
+         // Serial.print(onTimeMS - (currentMillis - previousMillis));
+         // Serial.println(" milliseconds");
       }
     } else if (delayTime != 0) {
         if (ledState == HIGH) {
@@ -216,7 +216,7 @@ void menuOptions() {
       }
       break;
     case 'Q':  // print name of version of arduino code
-      Serial.println("Version of arduino code: " + arduinoProgramVersion);
+      Serial.println("Arduino program version: " + arduinoProgramVersion);
       break;
     case '?':  // print help screen
       Serial.println("Help Screen: ");
