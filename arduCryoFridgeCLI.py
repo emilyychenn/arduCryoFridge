@@ -43,7 +43,7 @@ def autodetect():
                 print("\nCouldn't open port: " + str(e))
                 ser = None
     if not(connected):
-        print("No likely serial port found.")
+        print("No likely serial port found. Use command '--port=<USBportname>' to manually specify a port.")
 
 
 if __name__ == "__main__":
@@ -115,7 +115,6 @@ if args['--port'] != None:
         button3Status = ser.readline()
         print(button3Status)
         
-        
     elif args['-q'] != False:
         print("Python program version: " + str(programVersion))
         ser.readline()
@@ -123,6 +122,6 @@ if args['--port'] != None:
         arduinoProgramVersion = ser.readline()
         print(str(arduinoProgramVersion))
 else:
-    print("Enter a serial port. Use command '--port=<USBportname>' to manually specify a port, or '--autoport' to try automatically detecting again.")
+    print("No likely serial port found. Use command '--port=<USBportname>' to manually specify a port.")
                 
             
