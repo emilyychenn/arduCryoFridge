@@ -99,13 +99,11 @@ void setLed(int onTime, int offTime, unsigned long delayTime) {
       }
     } else if (delayTime != 0) {
         if (ledState == HIGH) {
-          onTimeMS = onTimeMS + delayTimeMS;
-          if ((currentMillis - previousMillis >= onTimeMS)) {
+          if ((currentMillis - previousMillis >= delayTimeMS)) {
             Serial.println("On/off cycle starting now.");
             ledState = LOW;
             previousMillis = currentMillis;
             digitalWrite(ledPin, ledState);
-            onTimeMS = onTimeMS - delayTimeMS; //returns it back to original ontime
             delayTime = 0;
           } else {
             // for testing:
@@ -114,13 +112,11 @@ void setLed(int onTime, int offTime, unsigned long delayTime) {
             // Serial.println(" milliseconds");
           }
         } else { //ledState is LOW
-          offTimeMS = offTimeMS + delayTimeMS;
-          if ((currentMillis - previousMillis >= offTimeMS)) {
+          if ((currentMillis - previousMillis >= delayTimeMS)) {
             Serial.println("On/off cycle starting now.");
             ledState = HIGH;
             previousMillis = currentMillis;
             digitalWrite(ledPin, ledState);
-            offTimeMS = offTimeMS - delayTimeMS; //returns it back to original offtime
             delayTime = 0;
           } else {
             // for testing:
