@@ -28,11 +28,16 @@ or start server
 arduCryoFridgeServer
 ```
 
-Note: if the arduino port fails to autoconnect when running `arduCryoFridgeCLI.py`,
-(i.e. the program lists all open ports but does not connect to any), 
-manually specify the port where Arduino is connected with `arduCryoFridgeCLI.py [--port=<USBportname>]`.
 
-## Command Line Arguments
+## Configuration
+
+The arduino port should attempt to autoconnect the first time the program `arduCryoFridgeCLI.py` is run.
+If it fails to autoconnect (i.e. the program lists all open ports but does not connect to any), 
+manually specify the port where Arduino is connected with: 
+```arduCryoFridgeCLI.py [--port=<USBportname>]```
+
+Other settings can be configured using the following commands from the python program for the CLI. 
+Ensure the Serial Monitor on the `ino` file is closed when running:
 
 ```
 Usage:
