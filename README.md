@@ -12,6 +12,11 @@ Download the package
 git clone https://git.sarlab.ca/DrSAR/arducryofridge.git 
 ```
 
+Install the Arduino *EnableInterrupt* Library:
+* open the `ino` file
+* navigate to 'Tools > Manage Libraries'
+* search for EnableInterrupt by Mike Schwager and install
+
 ## Usage
 
 Deploy the `ino` file to the arduino Uno using a stanfard Arduino development environment. 
