@@ -145,25 +145,23 @@ void setLed(int onTime, int offTime, unsigned long delayTime) {
 
 void switchCompressorOn() {
   // pull pin 11 high for 300ms and then off again
+  previousInputTime = millis();
   currentInputTime = millis();
-  Serial.print("pin 11 state:");
-  Serial.println(!input1State);
-  // TODO: FIX THIS WHILE LOOP (and the one below!!): neither of them are being run rn....
-  while (currentInputTime - previousInputTime < 3000) {
-    Serial.println("in the while loop");
+  while (currentInputTime - previousInputTime < 300) {
+    // Serial.println("in the while loop"); //for testing to see if/how long this runs
     input1State = HIGH;
     digitalWrite(input1Pin, input1State);
     currentInputTime = millis();
   }
   input1State = LOW;
-  Serial.print("pin 11 state:");
-  Serial.println(input1State);
 }
 
 void switchCompressorOff() {
  // pull pin 12 high for 300ms and then off again
+  previousInputTime = millis();
   currentInputTime = millis();
-  while (currentInputTime - previousInputTime < 3000) {
+  while (currentInputTime - previousInputTime < 300) {
+    // Serial.println("in the while loop"); //for testing to see if/how long this loop runs
     input2State = HIGH;
     digitalWrite(input2Pin, input2State);
     currentInputTime = millis();
