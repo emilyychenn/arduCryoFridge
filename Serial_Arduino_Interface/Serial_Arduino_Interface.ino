@@ -1,6 +1,15 @@
 #include <EnableInterrupt.h> // for the third pin (on arduino UNO only 2 pins are setup to handle interrupts)
 
+const int output1Pin = 11;
+const int output2Pin = 12;
+volatile int output1State = LOW;
+volatile int output2State = LOW;
+unsigned long currentOutputTime;
+unsigned long previousOutputTime = 0;
+unsigned long outputTime = 300;
+
 const int ledPin = 13;
+
 const int button1Pin = 2;
 const int button2Pin = 3;
 const int button3Pin = 7;
@@ -15,7 +24,7 @@ unsigned long timetostart, timetostartMS, currentMillis;
 unsigned long previousMillis = 0; // last time LED was updated
 unsigned long delayTime = 0;
 int ledState = LOW;
-int cycleMode = 0; // 0 = auto-cycling, 1 = manual
+int cycleMode = 0; // 0 = auto-cycling, 1 = manual (user-specified)
 
 char menuInput;
 
@@ -24,6 +33,8 @@ String arduinoProgramVersion = "1.0";
 
 void setup() {
   pinMode(ledPin, OUTPUT);
+  pinMode(output1Pin, OUTPUT);
+  pinMode(output2Pin, OUTPUT);
 
   pinMode(button1Pin, INPUT_PULLUP);
   pinMode(button2Pin, INPUT_PULLUP);
@@ -46,30 +57,30 @@ void loop() {
 
 void interruptChange1() {
   if (button1State == HIGH) {
-    button1State = LOW; // button state changed from high to low
+    button1State = LOW;
     Serial.println("Button 1 State: OFF");
   } else if (button1State == LOW) {
-    button1State = HIGH; // button state changed from low to high
+    button1State = HIGH;
     Serial.println("Button 1 State: ON");
   }
 }
 
 void interruptChange2() {
   if (button2State == HIGH) {
-    button2State = LOW; // button state changed from high to low
+    button2State = LOW;
     Serial.println("Button 2 State: OFF");
   } else if (button2State == LOW) {
-    button2State = HIGH; // button state changed from low to high
+    button2State = HIGH;
     Serial.println("Button 2 State: ON");
   }
 }
 
 void interruptChange3() {
   if (button3State == HIGH) {
-    button3State = LOW; // button state changed from high to low
+    button3State = LOW;
     Serial.println("Button 3 State: OFF");
   } else if (button3State == LOW) {
-    button3State = HIGH; // button state changed from low to high
+    button3State = HIGH;
     Serial.println("Button 3 State: ON");
   }
 }
@@ -84,13 +95,11 @@ void setLed(int onTime, int offTime, unsigned long delayTime) {
   
     if (delayTime == 0) {
       if ((ledState == HIGH) && (currentMillis - previousMillis >= onTimeMS)) {
-        ledState = LOW;
         previousMillis = currentMillis;
-        digitalWrite(ledPin, ledState);
+        switchCompressorOff();
       } else if ((ledState == LOW) && (currentMillis - previousMillis >= offTimeMS)) {
-        ledState = HIGH;
         previousMillis = currentMillis;
-        digitalWrite(ledPin, ledState);
+        switchCompressorOn();
       } else {
          // for testing:
          // Serial.print("Time remaining before switch: ");
@@ -101,9 +110,8 @@ void setLed(int onTime, int offTime, unsigned long delayTime) {
         if (ledState == HIGH) {
           if ((currentMillis - previousMillis >= delayTimeMS)) {
             Serial.println("On/off cycle starting now.");
-            ledState = LOW;
             previousMillis = currentMillis;
-            digitalWrite(ledPin, ledState);
+            switchCompressorOff();
             delayTime = 0;
           } else {
             // for testing:
@@ -114,9 +122,8 @@ void setLed(int onTime, int offTime, unsigned long delayTime) {
         } else { //ledState is LOW
           if ((currentMillis - previousMillis >= delayTimeMS)) {
             Serial.println("On/off cycle starting now.");
-            ledState = HIGH;
             previousMillis = currentMillis;
-            digitalWrite(ledPin, ledState);
+            switchCompressorOn();
             delayTime = 0;
           } else {
             // for testing:
@@ -129,6 +136,37 @@ void setLed(int onTime, int offTime, unsigned long delayTime) {
   }
 }
 
+void switchCompressorOn() {
+  // pull pin 11 high for 300ms and then off again
+  previousOutputTime = millis();
+  currentOutputTime = millis();
+  ledState = HIGH;
+  digitalWrite(ledPin, ledState);
+  output1State = HIGH;
+  digitalWrite(output1Pin, output1State);
+  while (currentOutputTime - previousOutputTime < outputTime) {
+    // Serial.println("in the while loop"); //for testing to see if/how long this runs
+    currentOutputTime = millis();
+  }
+  output1State = LOW;
+  digitalWrite(output1Pin, output1State);
+}
+
+void switchCompressorOff() {
+ // pull pin 12 high for 300ms and then off again
+  previousOutputTime = millis();
+  currentOutputTime = millis();
+  ledState = LOW;
+  digitalWrite(ledPin, ledState);
+  output2State = HIGH;
+  digitalWrite(output2Pin, output2State);
+  while (currentOutputTime - previousOutputTime < outputTime) {
+    // Serial.println("in the while loop"); //for testing to see if/how long this loop runs
+    currentOutputTime = millis();
+  }
+  output2State = LOW;
+  digitalWrite(output2Pin, output2State);
+}
 
 void menuOptions() {
   menuInput = Serial.read();
@@ -149,12 +187,14 @@ void menuOptions() {
       Serial.println("Switch compressor on NOW"); 
       digitalWrite(ledPin, HIGH);
       ledState = HIGH;
+      switchCompressorOn();
       cycleMode = 1;
       break;
     case 'X':  //switch compressor off NOW and keep it off
       Serial.println("Switch compressor off NOW"); 
       digitalWrite(ledPin, LOW);
       ledState = LOW;
+      switchCompressorOff();
       cycleMode = 1;
       break;
     case 'Z':  // start on/off cycle in xxx minutes
