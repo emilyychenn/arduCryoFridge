@@ -2,8 +2,8 @@
 Usage:
   arduCryoFridgeCLI.py [--port=<USBportname>] configure [--ontime=<ontime>] [--offtime=<offtime>]
   arduCryoFridgeCLI.py [--port=<USBportname>] switch [--on | --off] [--now | --delay=<delay>]
-  arduCryoFridgeCLI.py [--port=<USBportname>] [-s | --status]
-  arduCryoFridgeCLI.py [--port=<USBportname>] [-q]
+  arduCryoFridgeCLI.py [--port=<USBportname>] (-s | --status)
+  arduCryoFridgeCLI.py [--port=<USBportname>] -q
   arduCryoFridgeCLI.py -h | --help
   
 Options:
@@ -35,10 +35,10 @@ def autodetect():
         print("{}: {} [{}]".format(port, desc, hwid))
         if desc == "USB2.0-Serial":
             try:
-                ser = serial.Serial(port, baud, timeout = 0.05)
+                ser = serial.Serial(port, baud)
                 print("Connected to: " + port + '\n')
                 connected = True
-                break
+                return ser
             except Exception as e:
                 print("\nCouldn't open port: " + str(e))
                 ser = None
@@ -48,25 +48,14 @@ def autodetect():
 
 if __name__ == "__main__":
     args = docopt(__doc__)  # docopt saves arguments and options as key:value pairs in a dictionary
-    try:
-        if args['--port'] == None:
-            args['--port'] = usbPort
-    except NameError:
-        autodetect()
     print(args)
 
+    if args['--port'] == None:
+        ser = autodetect()
+    else:
+        ser = serial.Serial(args['--port'], baud)
 
-# NOTE: MUST SPECIFY OR AUTODETECT PORT BEFORE RUNNING ANY OTHER COMMANDS, OTHERWISE NOTHING WORKS
-if args['--port'] != None:
-    try:
-        usbPort = args['--port']
-        ser = serial.Serial(usbPort, baud)
-    except (FileNotFoundError, OSError) as e:
-        wrongPort = args['--port']
-        print("\nCouldn't find port: " + str(wrongPort))
-        ser = None
         
-if args['--port'] != None:
     if args['configure'] == True:
         if args['--ontime'] != None:
             ontime = args['--ontime']
@@ -121,7 +110,7 @@ if args['--port'] != None:
         ser.write('Q'.encode())
         arduinoProgramVersion = ser.readline()
         print(str(arduinoProgramVersion))
-else:
-    print("No likely serial port found. Use command '--port=<USBportname>' to manually specify a port.")
-                
-            
+
+    else:
+        print('nothing left to do')
+        

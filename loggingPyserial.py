@@ -15,49 +15,17 @@ import logging
 from datetime import date, time, timedelta, datetime
 import time
 import os
+from arduCryoFridgeCLI import autodetect
 
 baud = 9600
 
-# will try to autodetect port first, if no port detected, will prompt user to input a port
-# doesn't work with third-party Arduino knockoffs (in which case, user specifies port)
-def autodetect():
-    ports = serial.tools.list_ports.comports()
-    connected = False
-    print("Available ports: ")
-    for port, desc, hwid in sorted(ports):
-        print("{}: {} [{}]".format(port, desc, hwid))
-        if desc == "USB2.0-Serial":
-            try:
-                ser = serial.Serial(port, baud, timeout = 0.05)
-                print("Connected to: " + port + '\n')
-                connected = True
-                break
-            except Exception as e:
-                print("\nCouldn't open port: " + str(e))
-                ser = None
-    if not(connected):
-        print("No likely serial port found.")
+args = docopt(__doc__)
+print(args)
 
-
-if __name__ == "__main__":
-    args = docopt(__doc__)  # docopt saves arguments and options as key:value pairs in a dictionary
-    try:
-        if args['--port'] == None:
-            args['--port'] = usbPort
-    except NameError:
-        autodetect()
-    print(args)
-
-
-if args['--port'] != None:
-    try:
-        usbPort = args['--port']
-        ser = serial.Serial(usbPort, baud)
-    except (FileNotFoundError, OSError) as e:
-        wrongPort = args['--port']
-        print("\nCouldn't find port: " + str(wrongPort))
-        ser = None
-
+if args['--port'] == None:
+    ser = autodetect()
+else:
+    ser = serial.Serial(args['--port'], baud)
 
 
 # log all button interrupts as warnings
