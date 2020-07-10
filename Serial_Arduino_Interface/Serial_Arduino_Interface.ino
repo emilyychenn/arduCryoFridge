@@ -32,8 +32,8 @@ String arduinoProgramVersion = "1.0";
 
 void setup() {
   pinMode(ledPin, OUTPUT);
-  pinMode(input1Pin, INPUT_PULLUP);
-  pinMode(input2Pin, INPUT_PULLUP);
+  pinMode(input1Pin, OUTPUT);
+  pinMode(input2Pin, OUTPUT);
 
   pinMode(button1Pin, INPUT_PULLUP);
   pinMode(button2Pin, INPUT_PULLUP);
@@ -147,26 +147,28 @@ void switchCompressorOn() {
   // pull pin 11 high for 300ms and then off again
   previousInputTime = millis();
   currentInputTime = millis();
+  input1State = HIGH;
+  digitalWrite(input1Pin, input1State);
   while (currentInputTime - previousInputTime < 300) {
     // Serial.println("in the while loop"); //for testing to see if/how long this runs
-    input1State = HIGH;
-    digitalWrite(input1Pin, input1State);
     currentInputTime = millis();
   }
   input1State = LOW;
+  digitalWrite(input1Pin, input1State);
 }
 
 void switchCompressorOff() {
  // pull pin 12 high for 300ms and then off again
   previousInputTime = millis();
   currentInputTime = millis();
+  input2State = HIGH;
+  digitalWrite(input2Pin, input2State);
   while (currentInputTime - previousInputTime < 300) {
     // Serial.println("in the while loop"); //for testing to see if/how long this loop runs
-    input2State = HIGH;
-    digitalWrite(input2Pin, input2State);
     currentInputTime = millis();
   }
   input2State = LOW;
+  digitalWrite(input2Pin, input2State);
 }
 
 void menuOptions() {
