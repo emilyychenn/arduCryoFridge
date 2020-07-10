@@ -86,7 +86,7 @@ def giveStatusUpdate():
         logging.info(statusUpdate)
         print(statusUpdate)
 
-if args['--port'] != None:
+if args['--port'] != None: # TODO: check is this line necessary?
     try:
         while True:
             if (ser.in_waiting != 0):
@@ -98,6 +98,6 @@ if args['--port'] != None:
                 giveStatusUpdate()
             else:
                 continue
-    except KeyboardInterrupt:
+    except KeyboardInterrupt: # add exception to catch no port!!
         print("\nLogging stopped")
 

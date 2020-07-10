@@ -1,6 +1,14 @@
 #include <EnableInterrupt.h> // for the third pin (on arduino UNO only 2 pins are setup to handle interrupts)
 
+const int input1Pin = 11;
+const int input2Pin = 12;
+volatile int input1State = LOW;
+volatile int input2State = LOW;
+unsigned long currentInputTime;
+unsigned long previousInputTime = 0;
+
 const int ledPin = 13;
+
 const int button1Pin = 2;
 const int button2Pin = 3;
 const int button3Pin = 7;
@@ -15,7 +23,7 @@ unsigned long timetostart, timetostartMS, currentMillis;
 unsigned long previousMillis = 0; // last time LED was updated
 unsigned long delayTime = 0;
 int ledState = LOW;
-int cycleMode = 0; // 0 = auto-cycling, 1 = manual
+int cycleMode = 0; // 0 = auto-cycling, 1 = manual (user-specified)
 
 char menuInput;
 
@@ -24,6 +32,8 @@ String arduinoProgramVersion = "1.0";
 
 void setup() {
   pinMode(ledPin, OUTPUT);
+  pinMode(input1Pin, INPUT_PULLUP);
+  pinMode(input2Pin, INPUT_PULLUP);
 
   pinMode(button1Pin, INPUT_PULLUP);
   pinMode(button2Pin, INPUT_PULLUP);
@@ -85,12 +95,14 @@ void setLed(int onTime, int offTime, unsigned long delayTime) {
     if (delayTime == 0) {
       if ((ledState == HIGH) && (currentMillis - previousMillis >= onTimeMS)) {
         ledState = LOW;
-        previousMillis = currentMillis;
         digitalWrite(ledPin, ledState);
+        switchCompressorOff();
+        previousMillis = currentMillis;
       } else if ((ledState == LOW) && (currentMillis - previousMillis >= offTimeMS)) {
         ledState = HIGH;
-        previousMillis = currentMillis;
         digitalWrite(ledPin, ledState);
+        previousMillis = currentMillis;
+        switchCompressorOn();
       } else {
          // for testing:
          // Serial.print("Time remaining before switch: ");
@@ -102,8 +114,9 @@ void setLed(int onTime, int offTime, unsigned long delayTime) {
           if ((currentMillis - previousMillis >= delayTimeMS)) {
             Serial.println("On/off cycle starting now.");
             ledState = LOW;
-            previousMillis = currentMillis;
             digitalWrite(ledPin, ledState);
+            previousMillis = currentMillis;
+            switchCompressorOff();
             delayTime = 0;
           } else {
             // for testing:
@@ -115,8 +128,9 @@ void setLed(int onTime, int offTime, unsigned long delayTime) {
           if ((currentMillis - previousMillis >= delayTimeMS)) {
             Serial.println("On/off cycle starting now.");
             ledState = HIGH;
-            previousMillis = currentMillis;
             digitalWrite(ledPin, ledState);
+            previousMillis = currentMillis;
+            switchCompressorOn();
             delayTime = 0;
           } else {
             // for testing:
@@ -129,6 +143,33 @@ void setLed(int onTime, int offTime, unsigned long delayTime) {
   }
 }
 
+void switchCompressorOn() {
+  // pull pin 11 high for 300ms and then off again
+  currentInputTime = millis();
+  Serial.print("pin 11 state:");
+  Serial.println(!input1State);
+  // TODO: FIX THIS WHILE LOOP (and the one below!!): neither of them are being run rn....
+  while (currentInputTime - previousInputTime < 3000) {
+    Serial.println("in the while loop");
+    input1State = HIGH;
+    digitalWrite(input1Pin, input1State);
+    currentInputTime = millis();
+  }
+  input1State = LOW;
+  Serial.print("pin 11 state:");
+  Serial.println(input1State);
+}
+
+void switchCompressorOff() {
+ // pull pin 12 high for 300ms and then off again
+  currentInputTime = millis();
+  while (currentInputTime - previousInputTime < 3000) {
+    input2State = HIGH;
+    digitalWrite(input2Pin, input2State);
+    currentInputTime = millis();
+  }
+  input2State = LOW;
+}
 
 void menuOptions() {
   menuInput = Serial.read();
@@ -149,12 +190,14 @@ void menuOptions() {
       Serial.println("Switch compressor on NOW"); 
       digitalWrite(ledPin, HIGH);
       ledState = HIGH;
+      switchCompressorOn();
       cycleMode = 1;
       break;
     case 'X':  //switch compressor off NOW and keep it off
       Serial.println("Switch compressor off NOW"); 
       digitalWrite(ledPin, LOW);
       ledState = LOW;
+      switchCompressorOff();
       cycleMode = 1;
       break;
     case 'Z':  // start on/off cycle in xxx minutes
