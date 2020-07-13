@@ -16,6 +16,9 @@ const int button3Pin = 7;
 volatile int button1State = 0;
 volatile int button2State = 0;
 volatile int button3State = 0;
+int lastButton1State, lastButton2State, lastButton3State;
+unsigned long lastDebounceTime = 0;
+unsigned long debounceDelay = 50;
 
 unsigned long ontime = 1; //default 1 minute
 unsigned long offtime = 1; //default 1 minute
@@ -56,33 +59,36 @@ void loop() {
 
 
 void interruptChange1() {
-  if (button1State == HIGH) {
-    button1State = LOW;
-    Serial.println("Button 1 State: OFF");
-  } else if (button1State == LOW) {
-    button1State = HIGH;
-    Serial.println("Button 1 State: ON");
+  unsigned long interruptTime = millis();
+
+  if (interruptTime - lastDebounceTime > debounceDelay) {
+    button1State = !button1State;
+    Serial.print("Button 1 State: ");
+    Serial.println(button1State);
   }
+  lastDebounceTime = interruptTime;
 }
 
 void interruptChange2() {
-  if (button2State == HIGH) {
-    button2State = LOW;
-    Serial.println("Button 2 State: OFF");
-  } else if (button2State == LOW) {
-    button2State = HIGH;
-    Serial.println("Button 2 State: ON");
+  unsigned long interruptTime = millis();
+
+  if (interruptTime - lastDebounceTime > debounceDelay) {
+    button2State = !button2State;
+    Serial.print("Button 2 State: ");
+    Serial.println(button2State);
   }
+  lastDebounceTime = interruptTime;
 }
 
 void interruptChange3() {
-  if (button3State == HIGH) {
-    button3State = LOW;
-    Serial.println("Button 3 State: OFF");
-  } else if (button3State == LOW) {
-    button3State = HIGH;
-    Serial.println("Button 3 State: ON");
+  unsigned long interruptTime = millis();
+
+  if (interruptTime - lastDebounceTime > debounceDelay) {
+    button3State = !button3State;
+    Serial.print("Button 3 State: ");
+    Serial.println(button3State);
   }
+  lastDebounceTime = interruptTime;
 }
 
 
@@ -167,6 +173,7 @@ void switchCompressorOff() {
   output2State = LOW;
   digitalWrite(output2Pin, output2State);
 }
+
 
 void menuOptions() {
   menuInput = Serial.read();
