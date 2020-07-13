@@ -65,8 +65,8 @@ void interruptChange1() {
     button1State = !button1State;
     Serial.print("Button 1 State: ");
     Serial.println(button1State);
+    lastDebounceTime = interruptTime;
   }
-  lastDebounceTime = interruptTime;
 }
 
 void interruptChange2() {
@@ -76,8 +76,8 @@ void interruptChange2() {
     button2State = !button2State;
     Serial.print("Button 2 State: ");
     Serial.println(button2State);
+    lastDebounceTime = interruptTime;
   }
-  lastDebounceTime = interruptTime;
 }
 
 void interruptChange3() {
@@ -87,8 +87,8 @@ void interruptChange3() {
     button3State = !button3State;
     Serial.print("Button 3 State: ");
     Serial.println(button3State);
+    lastDebounceTime = interruptTime;
   }
-  lastDebounceTime = interruptTime;
 }
 
 
@@ -151,7 +151,6 @@ void switchCompressorOn() {
   output1State = HIGH;
   digitalWrite(output1Pin, output1State);
   while (currentOutputTime - previousOutputTime < outputTime) {
-    // Serial.println("in the while loop"); //for testing to see if/how long this runs
     currentOutputTime = millis();
   }
   output1State = LOW;
@@ -167,7 +166,6 @@ void switchCompressorOff() {
   output2State = HIGH;
   digitalWrite(output2Pin, output2State);
   while (currentOutputTime - previousOutputTime < outputTime) {
-    // Serial.println("in the while loop"); //for testing to see if/how long this loop runs
     currentOutputTime = millis();
   }
   output2State = LOW;
