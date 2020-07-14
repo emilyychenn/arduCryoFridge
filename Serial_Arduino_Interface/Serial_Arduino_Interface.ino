@@ -6,7 +6,7 @@ volatile int output1State = LOW;
 volatile int output2State = LOW;
 unsigned long currentOutputTime;
 unsigned long previousOutputTime = 0;
-unsigned long outputTime = 300;
+unsigned long outputTime = 300; //pulls output1Pin high for 300ms and then off again
 
 const int ledPin = 13;
 
@@ -16,9 +16,6 @@ const int button3Pin = 7;
 volatile int button1State = 0;
 volatile int button2State = 0;
 volatile int button3State = 0;
-int lastButton1State, lastButton2State, lastButton3State;
-unsigned long lastDebounceTime = 0;
-unsigned long debounceDelay = 50;
 
 unsigned long ontime = 1; //default 1 minute
 unsigned long offtime = 1; //default 1 minute
@@ -29,6 +26,10 @@ unsigned long delayTime = 0;
 int ledState = LOW;
 int cycleMode = 0; // 0 = auto-cycling, 1 = manual (user-specified)
 
+int newpresses1 = 0;
+int newpresses2 = 0;
+int newpresses3 = 0;
+
 char menuInput;
 
 String arduinoProgramVersion = "1.0";
@@ -38,7 +39,7 @@ void setup() {
   pinMode(ledPin, OUTPUT);
   pinMode(output1Pin, OUTPUT);
   pinMode(output2Pin, OUTPUT);
-
+  
   pinMode(button1Pin, INPUT_PULLUP);
   pinMode(button2Pin, INPUT_PULLUP);
   pinMode(button3Pin, INPUT_PULLUP);
@@ -51,44 +52,66 @@ void setup() {
 }
 
 void loop() {
+  
   if (Serial.available()) {
     menuOptions();
   }
+
   setLed(ontime, offtime, timetostart);
+
+  // check ISR here!! (by keeping track of new button presses)
+  if (newpresses1) {
+    delay(100);
+      if (button1State == HIGH) { // button changed from HIGH to LOW
+        button1State = LOW;
+        Serial.println("Button 1 State: OFF");
+      } else if (button1State == LOW) {
+        button1State = HIGH;
+        Serial.println("Button 1 State: ON");
+      }
+    newpresses1 = 0;
+  } 
+  else if (newpresses2) {
+    delay(100);
+    if (button2State == HIGH) {
+        button2State = LOW;
+        Serial.println("Button 2 State: OFF");
+      } else if (button2State == LOW) {
+        button2State = HIGH;
+        Serial.println("Button 2 State: ON");
+      }
+    newpresses2 = 0;
+  } 
+  else if (newpresses3) {
+    delay(100);
+    if (button3State == HIGH) {
+        button3State = LOW;
+        Serial.println("Button 3 State: OFF");
+      } else if (button3State == LOW) {
+        button3State = HIGH;
+        Serial.println("Button 3 State: ON");
+      }
+    newpresses3 = 0;
+  }
 }
 
 
 void interruptChange1() {
-  unsigned long interruptTime = millis();
-
-  if (interruptTime - lastDebounceTime > debounceDelay) {
-    button1State = !button1State;
-    Serial.print("Button 1 State: ");
-    Serial.println(button1State);
-    lastDebounceTime = interruptTime;
-  }
+  newpresses1++;
+  Serial.print("# button 1 presses: ");
+  Serial.println(newpresses1);
 }
 
 void interruptChange2() {
-  unsigned long interruptTime = millis();
-
-  if (interruptTime - lastDebounceTime > debounceDelay) {
-    button2State = !button2State;
-    Serial.print("Button 2 State: ");
-    Serial.println(button2State);
-    lastDebounceTime = interruptTime;
-  }
+  newpresses2++;
+  Serial.print("# button 2 presses: ");
+  Serial.println(newpresses2);
 }
 
 void interruptChange3() {
-  unsigned long interruptTime = millis();
-
-  if (interruptTime - lastDebounceTime > debounceDelay) {
-    button3State = !button3State;
-    Serial.print("Button 3 State: ");
-    Serial.println(button3State);
-    lastDebounceTime = interruptTime;
-  }
+  newpresses3++;
+  Serial.print("# button 3 presses: ");
+  Serial.println(newpresses3);
 }
 
 
@@ -214,6 +237,7 @@ void menuOptions() {
       delayTime = timetostart;
       break;
     case 'S':  // report status of all switches
+    // TODO: report time remaining until switch
       if (ledState == HIGH) {
         Serial.println("Status of LED: ON");
         Serial.print("Status of Button 1: ");
