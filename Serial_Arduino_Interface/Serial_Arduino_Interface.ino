@@ -13,9 +13,10 @@ const int ledPin = 13;
 const int button1Pin = 2;
 const int button2Pin = 3;
 const int button3Pin = 7;
-volatile int button1State = 0;
-volatile int button2State = 0;
-volatile int button3State = 0;
+volatile int button1State, button2State, button3State;
+int previousButton1State = 0;
+int previousButton2State = 0;
+int previousButton3State = 0;
 
 unsigned long ontime = 1; //default 1 minute
 unsigned long offtime = 1; //default 1 minute
@@ -26,9 +27,13 @@ unsigned long delayTime = 0;
 int ledState = LOW;
 int cycleMode = 0; // 0 = auto-cycling, 1 = manual (user-specified)
 
-int newpresses1 = 0;
-int newpresses2 = 0;
-int newpresses3 = 0;
+int button1presses = 0;
+int button2presses = 0;
+int button3presses = 0;
+unsigned long timeToggled = 0; // the last time the output pin was toggled
+unsigned long timeToggled2 = 0;
+unsigned long timeToggled3 = 0;
+unsigned long debounce = 250; // the debounce time, increase if the output flickers
 
 char menuInput;
 
@@ -59,59 +64,72 @@ void loop() {
 
   setLed(ontime, offtime, timetostart);
 
-  // check ISR here!! (by keeping track of new button presses)
-  if (newpresses1) {
-    delay(100);
-      if (button1State == HIGH) { // button changed from HIGH to LOW
-        button1State = LOW;
-        Serial.println("Button 1 State: OFF");
+  // if the input just went from LOW and HIGH and we've waited long enough
+  // to ignore any noise on the circuit, toggle the output pin and remember
+  // the time
+  if (button1presses) {
+    if ((previousButton1State != button1State) && (millis() - timeToggled > debounce)) {
+      if (button1State == HIGH) {
+        Serial.println("button1State: ON");
+        previousButton1State = HIGH;
+        timeToggled = millis();  
       } else if (button1State == LOW) {
-        button1State = HIGH;
-        Serial.println("Button 1 State: ON");
+        Serial.println("button1State: OFF");
+        previousButton1State = LOW;
+        timeToggled = millis(); 
       }
-    newpresses1 = 0;
-  } 
-  else if (newpresses2) {
-    delay(100);
-    if (button2State == HIGH) {
-        button2State = LOW;
-        Serial.println("Button 2 State: OFF");
+    }
+    digitalWrite(button1Pin, button1State);
+    button1presses = 0;
+  }
+
+  if (button2presses) {
+    if ((previousButton2State != button2State) && (millis() - timeToggled2 > debounce)) {
+      if (button2State == HIGH) {
+        Serial.println("button2State: ON");
+        previousButton2State = HIGH;
+        timeToggled2 = millis();  
       } else if (button2State == LOW) {
-        button2State = HIGH;
-        Serial.println("Button 2 State: ON");
+        Serial.println("button2State: OFF");
+        previousButton2State = LOW;
+        timeToggled2 = millis(); 
       }
-    newpresses2 = 0;
-  } 
-  else if (newpresses3) {
-    delay(100);
-    if (button3State == HIGH) {
-        button3State = LOW;
-        Serial.println("Button 3 State: OFF");
+    }
+    digitalWrite(button2Pin, button2State);
+    button2presses = 0;
+  }
+
+  if (button3presses) {
+    if ((previousButton3State != button3State) && (millis() - timeToggled3 > debounce)) {
+      if (button3State == HIGH) {
+        Serial.println("button3State: ON");
+        previousButton3State = HIGH;
+        timeToggled3 = millis();  
       } else if (button3State == LOW) {
-        button3State = HIGH;
-        Serial.println("Button 3 State: ON");
+        Serial.println("button3State: OFF");
+        previousButton3State = LOW;
+        timeToggled3 = millis(); 
       }
-    newpresses3 = 0;
+    }
+    digitalWrite(button3Pin, button3State);
+    button3presses = 0;
   }
 }
 
 
 void interruptChange1() {
-  newpresses1++;
-  Serial.print("# button 1 presses: ");
-  Serial.println(newpresses1);
+  button1State = digitalRead(button1Pin);
+  button1presses++;
 }
 
 void interruptChange2() {
-  newpresses2++;
-  Serial.print("# button 2 presses: ");
-  Serial.println(newpresses2);
+  button2State = digitalRead(button2Pin);
+  button2presses++;
 }
 
 void interruptChange3() {
-  newpresses3++;
-  Serial.print("# button 3 presses: ");
-  Serial.println(newpresses3);
+  button3State = digitalRead(button3Pin);
+  button3presses++;
 }
 
 
