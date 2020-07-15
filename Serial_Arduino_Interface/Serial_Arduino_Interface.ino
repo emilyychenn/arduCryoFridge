@@ -18,8 +18,8 @@ int previousButton1State = 0;
 int previousButton2State = 0;
 int previousButton3State = 0;
 
-unsigned long ontime = 1; //default 1 minute
-unsigned long offtime = 1; //default 1 minute
+unsigned long ontime = 1; // default in mins
+unsigned long offtime = 1; // default in mins
 unsigned long onTime, offTime, onTimeMS, offTimeMS, delayTimeMS;
 unsigned long timetostart, timetostartMS, currentMillis;
 unsigned long previousMillis = 0; // last time LED was updated
@@ -143,12 +143,7 @@ void setLed(int onTime, int offTime, unsigned long delayTime) {
       } else if ((ledState == LOW) && (currentMillis - previousMillis >= offTimeMS)) {
         previousMillis = currentMillis;
         switchCompressorOn();
-      } else {
-         // for testing:
-         // Serial.print("Time remaining before switch: ");
-         // Serial.print(onTimeMS - (currentMillis - previousMillis));
-         // Serial.println(" milliseconds");
-      }
+      } 
     } else if (delayTime != 0) {
         if (ledState == HIGH) {
           if ((currentMillis - previousMillis >= delayTimeMS)) {
@@ -156,24 +151,14 @@ void setLed(int onTime, int offTime, unsigned long delayTime) {
             previousMillis = currentMillis;
             switchCompressorOff();
             delayTime = 0;
-          } else {
-            // for testing:
-            // Serial.print("LED is currently on. Time remaining before turning off: ");
-            // Serial.print(onTimeMS - (currentMillis - previousMillis));
-            // Serial.println(" milliseconds");
-          }
+          } 
         } else { //ledState is LOW
           if ((currentMillis - previousMillis >= delayTimeMS)) {
             Serial.println("On/off cycle starting now.");
             previousMillis = currentMillis;
             switchCompressorOn();
             delayTime = 0;
-          } else {
-            // for testing:
-            // Serial.print("LED is currently off. Time remaining before turning on: ");
-            // Serial.print(offTimeMS - (currentMillis - previousMillis));
-            // Serial.println(" milliseconds");
-          }
+          } 
       }
     }
   }
@@ -249,7 +234,6 @@ void menuOptions() {
       delayTime = timetostart;
       break;
     case 'S':  // report status of all switches
-    // TODO: report time remaining until switch
       Serial.print("Status of LED: ");
       Serial.println(ledState);
       Serial.print("Status of Button 1: ");
