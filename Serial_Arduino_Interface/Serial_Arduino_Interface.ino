@@ -50,10 +50,13 @@ void setup() {
   
   pinMode(button1Pin, INPUT_PULLUP);
   previousButton1State = digitalRead(button1Pin);
+  button1State = digitalRead(button1Pin);
   pinMode(button2Pin, INPUT_PULLUP);
   previousButton2State = digitalRead(button2Pin);
+  button2State = digitalRead(button2Pin);
   pinMode(button3Pin, INPUT_PULLUP);
   previousButton3State = digitalRead(button3Pin);
+  button3State = digitalRead(button3Pin);
   enableInterrupt(button1Pin, interruptChange1, CHANGE);
   enableInterrupt(button2Pin, interruptChange2, CHANGE);
   enableInterrupt(button3Pin, interruptChange3, CHANGE);
@@ -143,8 +146,26 @@ void setLed(int onTime, int offTime, unsigned long delayTime) {
       } else if ((ledState == LOW) && (currentMillis - previousMillis >= offTimeMS)) {
         previousMillis = currentMillis;
         switchCompressorOn();
+<<<<<<< HEAD
       } 
     } else if (delayTime != 0) {
+||||||| constructed merge base
+      } else {
+         // for testing:
+         // Serial.print("Time remaining before switch: ");
+         // Serial.print(onTimeMS - (currentMillis - previousMillis));
+         // Serial.println(" milliseconds");
+      }
+    } else if (delayTime != 0) {
+=======
+      } else {
+         // for testing:
+         // Serial.print("Time remaining before switch: ");
+         // Serial.print(onTimeMS - (currentMillis - previousMillis));
+         // Serial.println(" milliseconds");
+      }
+    } else {
+>>>>>>> bugfix: initialize buttonState
         if (ledState == HIGH) {
           if ((currentMillis - previousMillis >= delayTimeMS)) {
             Serial.println("On/off cycle starting now.");
@@ -242,13 +263,8 @@ void menuOptions() {
       Serial.println(button2State);
       Serial.print("Status of Button 3: ");
       Serial.println(button3State);
-      if (ledState == HIGH) { 
-        Serial.print("Time remaining before switch (in ms): ");
-        Serial.print(onTimeMS - (currentMillis - previousMillis));
-      } else {
-        Serial.print("Time remaining before switch (in ms): ");
-        Serial.print(offTimeMS - (currentMillis - previousMillis));
-      }
+      Serial.print("Time remaining before switch (in ms): ");
+      Serial.println(ledState*onTimeMS+(!ledState)*offTimeMS-(currentMillis - previousMillis));
       break;
     case 'Q':  // print name of version of arduino code
       Serial.println("Arduino program version: " + arduinoProgramVersion);
