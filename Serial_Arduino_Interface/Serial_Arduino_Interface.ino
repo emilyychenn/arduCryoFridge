@@ -30,10 +30,13 @@ int cycleMode = 0; // 0 = auto-cycling, 1 = manual (user-specified)
 int button1presses = 0;
 int button2presses = 0;
 int button3presses = 0;
+int press1timed = 0;
+int press2timed = 0;
+int press3timed = 0;
 unsigned long timeToggled = 0; // the last time the output pin was toggled
 unsigned long timeToggled2 = 0;
 unsigned long timeToggled3 = 0;
-unsigned long debounce = 250; // the debounce time, increase if the output flickers
+unsigned long debounce = 100; // the debounce time, increase if the output flickers
 
 char menuInput;
 
@@ -46,6 +49,7 @@ void setup() {
   pinMode(output2Pin, OUTPUT);
   
   pinMode(button1Pin, INPUT_PULLUP);
+  previousButton1State = digitalRead(button1Pin);
   pinMode(button2Pin, INPUT_PULLUP);
   pinMode(button3Pin, INPUT_PULLUP);
   enableInterrupt(button1Pin, interruptChange1, CHANGE);
@@ -54,66 +58,6 @@ void setup() {
 
   Serial.begin(9600);
   Serial.println("UNO is ready!");
-}
-
-void loop() {
-  
-  if (Serial.available()) {
-    menuOptions();
-  }
-
-  setLed(ontime, offtime, timetostart);
-
-  // if the input just went from LOW and HIGH and we've waited long enough
-  // to ignore any noise on the circuit, toggle the output pin and remember
-  // the time
-  if (button1presses) {
-    if ((previousButton1State != button1State) && (millis() - timeToggled > debounce)) {
-      if (button1State == HIGH) {
-        Serial.println("button1State: ON");
-        previousButton1State = HIGH;
-        timeToggled = millis();  
-      } else if (button1State == LOW) {
-        Serial.println("button1State: OFF");
-        previousButton1State = LOW;
-        timeToggled = millis(); 
-      }
-    }
-    digitalWrite(button1Pin, button1State);
-    button1presses = 0;
-  }
-
-  if (button2presses) {
-    if ((previousButton2State != button2State) && (millis() - timeToggled2 > debounce)) {
-      if (button2State == HIGH) {
-        Serial.println("button2State: ON");
-        previousButton2State = HIGH;
-        timeToggled2 = millis();  
-      } else if (button2State == LOW) {
-        Serial.println("button2State: OFF");
-        previousButton2State = LOW;
-        timeToggled2 = millis(); 
-      }
-    }
-    digitalWrite(button2Pin, button2State);
-    button2presses = 0;
-  }
-
-  if (button3presses) {
-    if ((previousButton3State != button3State) && (millis() - timeToggled3 > debounce)) {
-      if (button3State == HIGH) {
-        Serial.println("button3State: ON");
-        previousButton3State = HIGH;
-        timeToggled3 = millis();  
-      } else if (button3State == LOW) {
-        Serial.println("button3State: OFF");
-        previousButton3State = LOW;
-        timeToggled3 = millis(); 
-      }
-    }
-    digitalWrite(button3Pin, button3State);
-    button3presses = 0;
-  }
 }
 
 
@@ -131,6 +75,56 @@ void interruptChange3() {
   button3State = digitalRead(button3Pin);
   button3presses++;
 }
+
+
+void loop() {
+  
+  if (Serial.available()) {
+    menuOptions();
+  }
+
+  setLed(ontime, offtime, timetostart);
+
+  // deal with a flag from interrupt handler but wait for button state to settle
+  if (button1presses) {
+    delay(debounce);
+    // deal with the change of state if we're still in the new changed state
+    button1State = digitalRead(button1Pin);
+    if (previousButton1State != button1State) {
+      previousButton1State = button1State;
+      Serial.print("new button1State: ");
+      Serial.println(button1State);
+    }
+    press1timed = 0;
+    button1presses = 0;
+  }
+
+
+  if (button2presses) {
+    delay(debounce);
+    button2State = digitalRead(button2Pin);
+    if (previousButton2State != button2State) {
+      previousButton2State = button2State;
+      Serial.print("new button2State: ");
+      Serial.println(button2State);
+    }
+    press2timed = 0;
+    button2presses = 0;
+  }
+
+  if (button3presses) {
+    delay(debounce);
+    button3State = digitalRead(button3Pin);
+    if (previousButton3State != button3State) {
+      previousButton3State = button3State;
+      Serial.print("new button3State: ");
+      Serial.println(button3State);
+    }
+    press3timed = 0;
+    button3presses = 0;
+  }
+}
+
 
 
 void setLed(int onTime, int offTime, unsigned long delayTime) {
