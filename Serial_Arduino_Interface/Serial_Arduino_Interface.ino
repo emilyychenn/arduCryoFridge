@@ -51,7 +51,9 @@ void setup() {
   pinMode(button1Pin, INPUT_PULLUP);
   previousButton1State = digitalRead(button1Pin);
   pinMode(button2Pin, INPUT_PULLUP);
+  previousButton2State = digitalRead(button2Pin);
   pinMode(button3Pin, INPUT_PULLUP);
+  previousButton3State = digitalRead(button3Pin);
   enableInterrupt(button1Pin, interruptChange1, CHANGE);
   enableInterrupt(button2Pin, interruptChange2, CHANGE);
   enableInterrupt(button3Pin, interruptChange3, CHANGE);
@@ -92,7 +94,7 @@ void loop() {
     button1State = digitalRead(button1Pin);
     if (previousButton1State != button1State) {
       previousButton1State = button1State;
-      Serial.print("new button1State: ");
+      Serial.print("button1State: ");
       Serial.println(button1State);
     }
     press1timed = 0;
@@ -105,7 +107,7 @@ void loop() {
     button2State = digitalRead(button2Pin);
     if (previousButton2State != button2State) {
       previousButton2State = button2State;
-      Serial.print("new button2State: ");
+      Serial.print("button2State: ");
       Serial.println(button2State);
     }
     press2timed = 0;
@@ -117,7 +119,7 @@ void loop() {
     button3State = digitalRead(button3Pin);
     if (previousButton3State != button3State) {
       previousButton3State = button3State;
-      Serial.print("new button3State: ");
+      Serial.print("button3State: ");
       Serial.println(button3State);
     }
     press3timed = 0;
@@ -243,53 +245,25 @@ void menuOptions() {
       Serial.print(timetostart);
       Serial.println(" mins");
       cycleMode = 0;
-      previousMillis = millis(); // cycle will restart (i.e. if it was on before, it would stay on for delayTime + onTime)
-      // delete above line for cycle to continue from where it left off (i.e. if there was 15 seconds of ontime left, 
-      // the led would stay on for (delayTime + 15 seconds remaining))
+      previousMillis = millis();
       delayTime = timetostart;
       break;
     case 'S':  // report status of all switches
     // TODO: report time remaining until switch
-      if (ledState == HIGH) {
-        Serial.println("Status of LED: ON");
-        Serial.print("Status of Button 1: ");
-          if(button1State == HIGH) {
-            Serial.println("ON");
-          } else {
-            Serial.println("OFF");
-          }
-        Serial.print("Status of Button 2: ");
-          if(button2State == HIGH) {
-            Serial.println("ON");
-          } else {
-            Serial.println("OFF");
-          }
-        Serial.print("Status of Button 3: ");
-          if(button3State == HIGH) {
-            Serial.println("ON");
-          } else {
-            Serial.println("OFF");
-          }
-      } else if (ledState == LOW) {
-        Serial.println("Status of LED: OFF");
-        Serial.print("Status of Button 1: ");
-          if(button1State == HIGH) {
-            Serial.println("ON");
-          } else {
-            Serial.println("OFF");
-          }
-        Serial.print("Status of Button 2: ");
-          if(button2State == HIGH) {
-            Serial.println("ON");
-          } else {
-            Serial.println("OFF");
-          }
-        Serial.print("Status of Button 3: ");
-          if(button3State == HIGH) {
-            Serial.println("ON");
-          } else {
-            Serial.println("OFF");
-          }
+      Serial.print("Status of LED: ");
+      Serial.println(ledState);
+      Serial.print("Status of Button 1: ");
+      Serial.println(button1State);
+      Serial.print("Status of Button 2: ");
+      Serial.println(button2State);
+      Serial.print("Status of Button 3: ");
+      Serial.println(button3State);
+      if (ledState == HIGH) { 
+        Serial.print("Time remaining before switch (in ms): ");
+        Serial.print(onTimeMS - (currentMillis - previousMillis));
+      } else {
+        Serial.print("Time remaining before switch (in ms): ");
+        Serial.print(offTimeMS - (currentMillis - previousMillis));
       }
       break;
     case 'Q':  // print name of version of arduino code
