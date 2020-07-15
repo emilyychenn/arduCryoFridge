@@ -28,12 +28,13 @@ int ledState = LOW;
 int cycleMode = 0; // 0 = auto-cycling, 1 = manual (user-specified)
 
 int button1presses = 0;
+int press1timed = 0;
 int button2presses = 0;
 int button3presses = 0;
 unsigned long timeToggled = 0; // the last time the output pin was toggled
 unsigned long timeToggled2 = 0;
 unsigned long timeToggled3 = 0;
-unsigned long debounce = 250; // the debounce time, increase if the output flickers
+unsigned long debounce = 100; // the debounce time, increase if the output flickers
 
 char menuInput;
 
@@ -46,6 +47,7 @@ void setup() {
   pinMode(output2Pin, OUTPUT);
   
   pinMode(button1Pin, INPUT_PULLUP);
+  previousButton1State = digitalRead(button1Pin);
   pinMode(button2Pin, INPUT_PULLUP);
   pinMode(button3Pin, INPUT_PULLUP);
   enableInterrupt(button1Pin, interruptChange1, CHANGE);
@@ -64,24 +66,24 @@ void loop() {
 
   setLed(ontime, offtime, timetostart);
 
+  // deal with a flag from interrupt handler but wait for button state to settle
+  if (button1presses) {
+    delay(debounce);
+    // deal with the change of state if we're still in the new changed state
+    button1State = digitalRead(button1Pin);
+    if (previousButton1State != button1State) {
+      previousButton1State = button1State;
+      Serial.print("new button1State: ");
+      Serial.println(button1State);
+    }
+    press1timed = 0;
+    button1presses = 0;
+  }
+
+  
   // if the input just went from LOW and HIGH and we've waited long enough
   // to ignore any noise on the circuit, toggle the output pin and remember
   // the time
-  if (button1presses) {
-    if ((previousButton1State != button1State) && (millis() - timeToggled > debounce)) {
-      if (button1State == HIGH) {
-        Serial.println("button1State: ON");
-        previousButton1State = HIGH;
-        timeToggled = millis();  
-      } else if (button1State == LOW) {
-        Serial.println("button1State: OFF");
-        previousButton1State = LOW;
-        timeToggled = millis(); 
-      }
-    }
-    digitalWrite(button1Pin, button1State);
-    button1presses = 0;
-  }
 
   if (button2presses) {
     if ((previousButton2State != button2State) && (millis() - timeToggled2 > debounce)) {
@@ -95,7 +97,7 @@ void loop() {
         timeToggled2 = millis(); 
       }
     }
-    digitalWrite(button2Pin, button2State);
+    //digitalWrite(button2Pin, button2State);
     button2presses = 0;
   }
 
@@ -111,7 +113,7 @@ void loop() {
         timeToggled3 = millis(); 
       }
     }
-    digitalWrite(button3Pin, button3State);
+    //digitalWrite(button3Pin, button3State);
     button3presses = 0;
   }
 }
@@ -259,11 +261,7 @@ void menuOptions() {
       if (ledState == HIGH) {
         Serial.println("Status of LED: ON");
         Serial.print("Status of Button 1: ");
-          if(button1State == HIGH) {
-            Serial.println("ON");
-          } else {
-            Serial.println("OFF");
-          }
+        Serial.println(button1State);
         Serial.print("Status of Button 2: ");
           if(button2State == HIGH) {
             Serial.println("ON");
@@ -279,11 +277,7 @@ void menuOptions() {
       } else if (ledState == LOW) {
         Serial.println("Status of LED: OFF");
         Serial.print("Status of Button 1: ");
-          if(button1State == HIGH) {
-            Serial.println("ON");
-          } else {
-            Serial.println("OFF");
-          }
+        Serial.println(button1State);
         Serial.print("Status of Button 2: ");
           if(button2State == HIGH) {
             Serial.println("ON");
