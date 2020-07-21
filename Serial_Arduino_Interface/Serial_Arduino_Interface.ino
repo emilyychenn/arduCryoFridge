@@ -146,36 +146,18 @@ void setLed(int onTime, int offTime, unsigned long delayTime) {
       } else if ((ledState == LOW) && (currentMillis - previousMillis >= offTimeMS)) {
         previousMillis = currentMillis;
         switchCompressorOn();
-<<<<<<< HEAD
       } 
     } else if (delayTime != 0) {
-||||||| constructed merge base
-      } else {
-         // for testing:
-         // Serial.print("Time remaining before switch: ");
-         // Serial.print(onTimeMS - (currentMillis - previousMillis));
-         // Serial.println(" milliseconds");
-      }
-    } else if (delayTime != 0) {
-=======
-      } else {
-         // for testing:
-         // Serial.print("Time remaining before switch: ");
-         // Serial.print(onTimeMS - (currentMillis - previousMillis));
-         // Serial.println(" milliseconds");
-      }
-    } else {
->>>>>>> bugfix: initialize buttonState
         if (ledState == HIGH) {
           if ((currentMillis - previousMillis >= delayTimeMS)) {
-            Serial.println("On/off cycle starting now.");
+            Serial.println("off cycle starting now.");
             previousMillis = currentMillis;
             switchCompressorOff();
             delayTime = 0;
           } 
         } else { //ledState is LOW
           if ((currentMillis - previousMillis >= delayTimeMS)) {
-            Serial.println("On/off cycle starting now.");
+            Serial.println("On cycle starting now.");
             previousMillis = currentMillis;
             switchCompressorOn();
             delayTime = 0;
