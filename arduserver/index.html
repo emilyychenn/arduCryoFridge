@@ -5,12 +5,32 @@
       body { margin: 0px; padding: 20px; }
       #received { width: 500px; height: 400px; border: 1px solid #dedede; overflow-y:scroll;}
       #sent { width: 500px; } 
+       /* Style the buttons */
+    .btn {
+      border: none;
+      outline: none;
+      padding: 10px 16px;
+      background-color: #f1f1f1;
+      cursor: pointer;
+    }
+
+    /* Style the active class (and buttons on mouse-over) */
+    .active, .btn:hover {
+      background-color: #666;
+      color: white;
+    }
     </style>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <script type="text/javascript" src="static/main.js"></script>
   </head>
   <body>
   <h1>Websockets serial console</h1>
+
+  <div id="errorbuttons">
+    <button class="btn">1</button>
+    <button class="btn">2</button>
+    <button class="btn">3</button>
+  </div>
 
   <p>Data received from serial port</p>
   <div id="received">
