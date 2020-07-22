@@ -4,7 +4,7 @@ import multiprocessing
 
 ## Change this to match your local settings
 SERIAL_PORT = '/dev/cu.usbserial-1420'
-SERIAL_BAUDRATE = 115200
+SERIAL_BAUDRATE = 9600 #115200
 
 class SerialProcess(multiprocessing.Process):
  
@@ -18,11 +18,11 @@ class SerialProcess(multiprocessing.Process):
         self.sp.close()
  
     def writeSerial(self, data):
-        self.sp.write(data)
+        self.sp.write(data.encode())
         # time.sleep(1)
         
     def readSerial(self):
-        return self.sp.readline().replace("\n", "")
+        return self.sp.readline()
  
     def run(self):
         self.sp.flushInput()
@@ -34,11 +34,11 @@ class SerialProcess(multiprocessing.Process):
  
                 # send it to the serial device
                 self.writeSerial(data)
-                print("writing to serial: " + data)
+                print("writing to serial: {}".format(data))
  
             # look for incoming serial data
             if (self.sp.inWaiting() > 0):
                 data = self.readSerial()
-                print("reading from serial: " + data)
+                print("reading from serial: {}".format(data))
                 # send it back to tornado
                 self.output_queue.put(data)
