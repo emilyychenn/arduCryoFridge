@@ -13,7 +13,15 @@
       background-color: #f1f1f1;
       cursor: pointer;
     }
-
+    
+    .btnled {
+      border: none;
+      outline: none;
+      padding: 10px 16px;
+      background-color: #f1f1f1;
+      cursor: pointer;
+    }
+    
     /* Style the active class (and buttons on mouse-over) */
     .active, .btn:hover {
       background-color: #666;
@@ -30,6 +38,10 @@
     <button class="btn">1</button>
     <button class="btn">2</button>
     <button class="btn">3</button>
+  </div>
+  
+  <div id="onoffState">
+    <button class="btnled", button style="margin:5px;">LED State</button>
   </div>
 
   <p>Data received from serial port</p>
