@@ -180,6 +180,7 @@ void switchCompressorOn() {
   }
   output1State = LOW;
   digitalWrite(output1Pin, output1State);
+  Serial.println("LED on");
 }
 
 void switchCompressorOff() {
@@ -195,6 +196,7 @@ void switchCompressorOff() {
   }
   output2State = LOW;
   digitalWrite(output2Pin, output2State);
+  Serial.println("LED off");
 }
 
 
