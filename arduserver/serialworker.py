@@ -2,26 +2,24 @@ import serial
 import time
 import multiprocessing
 
-## Change this to match your local settings
-SERIAL_PORT = '/dev/ttyACM0'
-SERIAL_BAUDRATE = 9600 #115200
+baud = 9600
+
 
 class SerialProcess(multiprocessing.Process):
  
-    def __init__(self, input_queue, output_queue):
+    def __init__(self, input_queue, output_queue, serial_port):
         multiprocessing.Process.__init__(self)
         self.input_queue = input_queue
         self.output_queue = output_queue
-        self.sp = serial.Serial(SERIAL_PORT, SERIAL_BAUDRATE, timeout=1)
+        self.sp = serial_port
  
     def close(self):
         self.sp.close()
  
-    def writeSerial(self, data):
+    def write_serial(self, data):
         self.sp.write(data.encode())
-        # time.sleep(1)
         
-    def readSerial(self):
+    def read_serial(self):
         return self.sp.readline()
  
     def run(self):
@@ -33,12 +31,12 @@ class SerialProcess(multiprocessing.Process):
                 data = self.input_queue.get()
  
                 # send it to the serial device
-                self.writeSerial(data)
+                self.write_serial(data)
                 print("writing to serial: {}".format(data))
  
             # look for incoming serial data
-            if (self.sp.inWaiting() > 0):
-                data = self.readSerial()
+            if self.sp.inWaiting() > 0:
+                data = self.read_serial()
                 print("reading from serial: {}".format(data))
                 # send it back to tornado
                 self.output_queue.put(data)
