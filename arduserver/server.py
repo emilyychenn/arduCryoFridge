@@ -1,3 +1,15 @@
+"""
+Usage:
+  server.py [--port=<USBportname>]
+  server.py -h | --help
+
+Options:
+  --port=<USBportname>  Specify USB port.
+  -h --help             Show this screen.
+
+"""
+
+from docopt import docopt
 import tornado.httpserver
 import tornado.ioloop
 import tornado.web
@@ -7,6 +19,7 @@ from tornado.options import define, options
 import os
 import time
 import multiprocessing
+import serial
 import serialworker
 import json
  
@@ -17,6 +30,25 @@ clients = []
 input_queue = multiprocessing.Queue()
 output_queue = multiprocessing.Queue()
 
+baud = 9600
+# will try to autodetect port first, if no port detected, will prompt user to input a port
+def autodetect():
+    ports = serial.tools.list_ports.comports()
+    connected = False
+    print("Available ports: ")
+    for port, desc, hwid in sorted(ports):
+        print("{}: {} [{}]".format(port, desc, hwid))
+        if desc == "USB2.0-Serial":
+            try:
+                ser = serial.Serial(port, baud)
+                print("Connected to: " + port + '\n')
+                connected = True
+                return ser
+            except Exception as e:
+                print("\nCouldn't open port: " + str(e))
+                ser = None
+    if not connected:
+        print("No likely serial port found. Use command '--port=<USBportname>' to manually specify a port.")
 
  
 class IndexHandler(tornado.web.RequestHandler):
@@ -52,11 +84,19 @@ def checkQueue():
 
 
 if __name__ == '__main__':
+    args = docopt(__doc__)
+    print(args)
+
+    if args['--port'] is None:
+        ser = autodetect()
+    else:
+        ser = serial.Serial(args['--port'], baud)
+        
     ## start the serial worker in background (as a deamon)
-    sp = serialworker.SerialProcess(input_queue, output_queue)
+    sp = serialworker.SerialProcess(input_queue, output_queue, ser)
     sp.daemon = True
     sp.start()
-    tornado.options.parse_command_line()
+    # tornado.options.parse_command_line()    # no need for command line parsing anymore
     app = tornado.web.Application(
         handlers=[
             (r"/", IndexHandler),
